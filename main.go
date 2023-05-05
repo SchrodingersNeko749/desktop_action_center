@@ -8,11 +8,12 @@ const WINDOW_WIDTH = 700
 
 func main() {
 
-	ui := NewUI()
-
-	if err := ui.Init(); err != nil {
+	actionCenter := NewActionCenter()
+	notificationCenter := NewNotificationCenter(actionCenter)
+	if err := actionCenter.Init(); err != nil {
 		log.Fatal("Unable to initialize UI:", err)
 	}
 
-	ui.Run()
+	go notificationCenter.Run()
+	actionCenter.Run()
 }
