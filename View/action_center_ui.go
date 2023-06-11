@@ -11,7 +11,8 @@ import (
 const WINDOW_WIDTH = 700
 
 type ActionCenterUI struct {
-	win *gtk.Window
+	win                    *gtk.Window
+	containerStyleProvider *gtk.CssProvider
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {
@@ -32,21 +33,19 @@ func (app *ActionCenterUI) CreateUI() error {
 	}
 
 	// Create and add the label widget
-	if err := app.addLabel(); err != nil {
+	if err := app.addClockContainer(); err != nil {
 		return err
 	}
+	// Add Containers
+
+	// Add Tab Components
 
 	return nil
 }
-func (app *ActionCenterUI) addLabel() error {
+func (app *ActionCenterUI) addClockContainer() error {
 	// Create the label widget
 	l, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
-	l.SetName("header")
-	if err != nil {
-		log.Fatal("Unable to create label:", err)
-	}
-	l2, err := gtk.LabelNew("Action Center")
-	l2.SetName("header")
+	l.SetName("clock")
 	if err != nil {
 		log.Fatal("Unable to create label:", err)
 	}
@@ -56,34 +55,23 @@ func (app *ActionCenterUI) addLabel() error {
 	if err != nil {
 		return err
 	}
-	vbox.Add(l)
-	vbox.Add(l2)
-
-	// Create a new CSS provider and load the CSS file
-	provider, err := gtk.CssProviderNew()
-	if err != nil {
-		return err
-	}
-
-	if err := provider.LoadFromPath("/home/neko/Projects/programming/go/desktop_action_center/window.css"); err != nil {
-		return err
-	}
 
 	// Apply the CSS provider to the label widget's style context
 	lStyle, err := l.GetStyleContext()
 	if err != nil {
 		return err
 	}
-	lStyle.AddProvider(provider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	lStyle.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	// Apply the CSS provider to the box container's style context
 	vboxStyle, err := vbox.GetStyleContext()
 	if err != nil {
 		return err
 	}
-	vboxStyle.AddProvider(provider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	vboxStyle.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
 	// Add the box container to the window
+	vbox.Add(l)
 	app.win.Add(vbox)
 
 	return nil
@@ -114,23 +102,29 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
 
-	// Create a new CSS provider and load the CSS file
-	provider, err := gtk.CssProviderNew()
-	if err != nil {
-		return err
-	}
-
-	if err := provider.LoadFromPath("/home/neko/Projects/programming/go/desktop_action_center/window.css"); err != nil {
-		return err
-	}
+	// Initialize all Css containers
+	app.initCssStyles()
 
 	// Apply the CSS provider to the window style context
 	style, err := app.win.GetStyleContext()
 	if err != nil {
 		return err
 	}
-	style.AddProvider(provider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	style.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
+	return nil
+}
+func (app *ActionCenterUI) initCssStyles() error {
+	// Create a new CSS provider and load the CSS file
+	provider, err := gtk.CssProviderNew()
+	if err != nil {
+		return err
+	}
+
+	if err := provider.LoadFromPath("assets/window.css"); err != nil {
+		return err
+	}
+	app.containerStyleProvider = provider
 	return nil
 }
 func (app *ActionCenterUI) Run() {
