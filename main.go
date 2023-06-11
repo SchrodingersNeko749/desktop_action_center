@@ -2,18 +2,16 @@ package main
 
 import (
 	"log"
-)
 
-const WINDOW_WIDTH = 700
+	"github.com/actionCenter/Service"
+)
 
 func main() {
 
-	actionCenter := NewActionCenter()
-	notificationCenter := NewNotificationCenter(actionCenter)
+	actionCenter := Service.NewActionCenter()
+
 	if err := actionCenter.Init(); err != nil {
 		log.Fatal("Unable to initialize UI:", err)
 	}
-
-	go notificationCenter.Run()
 	actionCenter.Run()
 }

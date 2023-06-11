@@ -1,5 +1,29 @@
 window {
-    background: linear-gradient(to bottom, rgb(34, 34, 34), rgba(34, 34, 34, 0.8));
+    background: linear-gradient(to bottom, rgb(34, 34, 34), rgba(34, 34, 34, 0.7));
+}
 
+#header{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 3rem;
+    padding: 20px;
+}
+listbox {
+    background-color: #F4F4F4;
+    color: #333333;
+    font-size: 12pt;
+    border: none;
+    padding: 10px;
+}
 
+/* Style the list box row */
+listbox row {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #DDDDDD;
+    padding: 30px;
+}
+
+/* Style the list box row when selected */
+listbox row:selected {
+    background-color: #0078D7;
+    color: #FFFFFF;
 }
