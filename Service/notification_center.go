@@ -2,22 +2,24 @@ package Service
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/actionCenter/Model"
 	"github.com/godbus/dbus/v5"
 )
 
-type NotificationCenter struct {
+type NotificationCenter interface {
+	ListNotifications() ([]Model.Notification, error)
+}
+type NotificationCenterService struct {
 	Notifications []Model.Notification
 	conn          *dbus.Conn
 	obj           dbus.BusObject
 }
 
-func NewNotificationCenter() *NotificationCenter {
-	return &NotificationCenter{}
+func NewNotificationCenter() *NotificationCenterService {
+	return &NotificationCenterService{}
 }
-func (n *NotificationCenter) Run() error {
+func (n *NotificationCenterService) Run() error {
 	// Connect to the session bus
 	conn, err := dbus.SessionBus()
 	if err != nil {
@@ -28,25 +30,24 @@ func (n *NotificationCenter) Run() error {
 	obj := conn.Object("org.freedesktop.Notifications", dbus.ObjectPath("/org/freedesktop/Notifications"))
 	n.conn = conn
 	n.obj = obj
-	fmt.Println("test")
+
 	return nil
 }
-func (n *NotificationCenter) GetHistory() (error, []Model.Notification) {
-	// Call NotificationListHistory method
+func (n *NotificationCenterService) GetNotifications() ([]Model.Notification, error) {
 	call := n.obj.Call("org.dunstproject.cmd0.NotificationListHistory", 0)
 	if call.Err != nil {
-		log.Fatalln("cant call org.dunstproject.cmd0.NotificationListHistory", call.Err)
+		return nil, fmt.Errorf("error calling NotificationListHistory: %w", call.Err)
 	}
+
 	var variants []map[string]dbus.Variant
-	err := call.Store(&variants)
-	if err != nil {
-		panic(err)
+	if err := call.Store(&variants); err != nil {
+		return nil, fmt.Errorf("error decoding notification variants: %w", err)
 	}
-	fmt.Printf("%d Notifications found: \n", len(variants))
-	for _, v := range variants {
-		notif := Model.NotificationFromVariant(v)
-		n.Notifications = append(n.Notifications, notif)
-		fmt.Println("test")
+
+	notifications := make([]Model.Notification, len(variants))
+	for i, v := range variants {
+		notifications[i] = Model.NotificationFromVariant(v)
 	}
-	return nil, n.Notifications
+
+	return notifications, nil
 }
