@@ -13,47 +13,51 @@ const WINDOW_WIDTH = 700
 type ActionCenterUI struct {
 	win                    *gtk.Window
 	containerStyleProvider *gtk.CssProvider
+	container              *gtk.Box
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {
-	vis := app.win.IsVisible()
-	app.setVisible(!vis)
-}
-func (a *ActionCenterUI) setVisible(visible bool) {
-	if visible {
-		a.win.ShowAll()
+	if app.win.IsVisible() {
+		app.win.Hide()
 	} else {
-		a.win.Hide()
+		app.win.ShowAll()
 	}
 }
+
 func (app *ActionCenterUI) CreateUI() error {
+
 	// Initialize the window
 	if err := app.initWindow(); err != nil {
 		return err
 	}
-
-	// Create and add the label widget
-	if err := app.addClockContainer(); err != nil {
+	c, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	if err != nil {
 		return err
 	}
+	app.container = c
 	// Add Containers
+	if err := app.createClockContainer(); err != nil {
+		return err
+	}
 
+	if err := app.createTabViewerContainer(); err != nil {
+		return err
+	}
 	// Add Tab Components
 
+	app.win.Add(app.container)
 	return nil
 }
-func (app *ActionCenterUI) addClockContainer() error {
-	// Create the label widget
+func (app *ActionCenterUI) createClockContainer() error {
+
+	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	if err != nil {
+		return err
+	}
 	l, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
 	l.SetName("clock")
 	if err != nil {
 		log.Fatal("Unable to create label:", err)
-	}
-
-	// Create the vertical box container and add the label widget to it
-	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	if err != nil {
-		return err
 	}
 
 	// Apply the CSS provider to the label widget's style context
@@ -72,7 +76,7 @@ func (app *ActionCenterUI) addClockContainer() error {
 	vbox.SetHAlign(gtk.ALIGN_START)
 	// Add the box container to the window
 	vbox.Add(l)
-	app.win.Add(vbox)
+	app.container.Add(vbox)
 
 	return nil
 }
