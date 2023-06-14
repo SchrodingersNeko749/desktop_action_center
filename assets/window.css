@@ -1,5 +1,5 @@
 window {
-    background: linear-gradient(to bottom, rgba(34, 34, 34, 0.7), rgba(34, 34, 34, 0.7));
+    background: linear-gradient(to bottom, #26011C, #26011C);
 }
 
 #clock{
@@ -7,23 +7,78 @@ window {
     font-size: 3rem;
     padding: 20px;
 }
-.mytab{
+.tab{
     background-image:none;
     background-color: rgba(84, 83, 83, 0.336);
-    color : rgb(217, 217, 217);
-    padding: 1rem;
+    color : #d9d9d9;
+    font-size: 2rem;
+    margin: 5px;
 
 }
-.mytab:hover{
+.tab:hover{
 
-    background-color: rgba(10, 93, 181, 0.631);
-    color : rgb(217, 217, 217);
-
+    background-color: #B86965;
+    color : rgb(217, 217, 217);    
 }
-.tab.selected {
-    background: #007bff;
+.tab-selected {
+    background-color: #B86965;
     border-bottom: solid;
+    border-bottom: solid white 0.5rem;
+    color: aqua;
   }
 #tab-container{
     padding: 1rem;
+    background-image: none;
+}
+
+.tab-viewer > header {
+    background-image: none;
+    background-color: transparent;
+    border-style: solid;
+}
+
+.tab-viewer > .header > .button:active {
+    background-image: none;
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+}
+
+/* CSS style for the notebook pages */
+.tab-viewer > .stack > .page {
+    background-image: none;
+    background-color: transparent;
+    background-color: #eee;
+    color: #bf1515;
+    padding: 1rem;
+}
+
+/* CSS style for the notebook container */
+.tab-viewer {
+    background-image: none;
+}
+.tab-viewer tab{
+    background-image: none;
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';
+    background-color: rgba(84, 83, 83, 0.336);
+}
+.tab-viewer tab:hover{
+    background-image: none;
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';
+    background-color: rgba(152, 68, 68, 0.336);
+}
+.tab-viewer stack{
+    background-image: none;
+    background-color: transparent;
+}
+.tab-viewer > header.top > tabs > tab:checked {
+    background-image: none;
+    background-color: rgba(152, 68, 68, 0.336);
+    border-bottom: 1px solid white;
 }

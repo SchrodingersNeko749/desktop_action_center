@@ -36,7 +36,7 @@ func (app *ActionCenterUI) CreateUI() error {
 	}
 	app.container = c
 	// Add Containers
-	if err := app.createClockContainer(); err != nil {
+	if err := app.createHeaderContainer(); err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func (app *ActionCenterUI) CreateUI() error {
 	app.win.Add(app.container)
 	return nil
 }
-func (app *ActionCenterUI) createClockContainer() error {
+func (app *ActionCenterUI) createHeaderContainer() error {
 
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
@@ -75,6 +75,7 @@ func (app *ActionCenterUI) createClockContainer() error {
 	vboxStyle.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
 	// Add the box container to the window
+
 	vbox.Add(l)
 	app.container.Add(vbox)
 
