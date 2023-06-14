@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/actionCenter/Command"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -14,6 +15,7 @@ type ActionCenterUI struct {
 	win                    *gtk.Window
 	containerStyleProvider *gtk.CssProvider
 	container              *gtk.Box
+	actionCenter           Command.ActionCenterInterface
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {
@@ -24,12 +26,14 @@ func (app *ActionCenterUI) ToggleVisiblity() {
 	}
 }
 
-func (app *ActionCenterUI) CreateUI() error {
-
+func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 	// Initialize the window
 	if err := app.initWindow(); err != nil {
 		return err
 	}
+	// make the actioncenter handler
+	app.actionCenter = ac
+
 	c, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return err

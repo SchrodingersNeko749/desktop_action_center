@@ -26,11 +26,14 @@ func (app *ActionCenter) Init() error {
 	app.actionCenterUI = &View.ActionCenterUI{}
 
 	log.Println("init()")
-	if err := app.actionCenterUI.CreateUI(); err != nil {
+	if err := app.actionCenterUI.CreateUI(app); err != nil {
 		return err
 	}
 
 	return nil
+}
+func (app *ActionCenter) Hello() string {
+	return "Hello World"
 }
 
 func (app *ActionCenter) Run() {

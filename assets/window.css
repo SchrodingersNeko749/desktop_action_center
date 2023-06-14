@@ -26,10 +26,7 @@ window {
     border-bottom: solid white 0.5rem;
     color: aqua;
   }
-#tab-container{
-    padding: 1rem;
-    background-image: none;
-}
+
 
 .tab-viewer > header {
     background-image: none;
@@ -76,9 +73,28 @@ window {
 .tab-viewer stack{
     background-image: none;
     background-color: transparent;
+    padding: 1rem;
 }
 .tab-viewer > header.top > tabs > tab:checked {
     background-image: none;
     background-color: rgba(152, 68, 68, 0.336);
     border-bottom: 1px solid white;
 }
+.tab-viewer > header{
+    padding :1rem;
+    border-bottom: 1px solid white;
+
+}
+.notification-container{
+    background-image: none;
+    background-color: #26011C;
+}
+.notification-container row{
+    background-image: none;
+    background-color: #26011C;
+}
+/* list {
+    color: white;
+    background-color: #3892c0;
+    border-color: #1b1f20;
+  } */

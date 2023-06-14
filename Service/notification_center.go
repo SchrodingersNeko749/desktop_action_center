@@ -7,9 +7,6 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-type NotificationCenter interface {
-	ListNotifications() ([]Model.Notification, error)
-}
 type NotificationCenterService struct {
 	Notifications []Model.Notification
 	conn          *dbus.Conn
