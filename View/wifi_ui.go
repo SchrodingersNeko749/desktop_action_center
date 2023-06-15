@@ -8,6 +8,9 @@ import (
 
 func (app *ActionCenterUI) createWifiComponent() (*gtk.Box, error) {
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	if err != nil {
+		return nil, err
+	}
 	if app.actionCenter == nil {
 		fmt.Println("is null")
 	}

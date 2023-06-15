@@ -16,6 +16,7 @@ type ActionCenterUI struct {
 	containerStyleProvider *gtk.CssProvider
 	container              *gtk.Box
 	actionCenter           Command.ActionCenterInterface
+	notifications          NotificationList
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {

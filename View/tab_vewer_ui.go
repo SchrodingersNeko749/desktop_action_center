@@ -69,8 +69,25 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	notebook.AppendPage(n, ntab)
 	notebook.AppendPage(c, ctab)
 
+	notebook.SetCurrentPage(0)
+
 	notebook.Connect("switch-page", func() {
-		fmt.Println(notebook.GetCurrentPage())
+		switch notebook.GetCurrentPage() {
+		case 0:
+			fmt.Println("wifi")
+		case 1:
+			fmt.Println("radio")
+		case 2:
+			fmt.Println("ai")
+		case 3:
+			fmt.Println("notification")
+			app.ShowNotifications()
+		case 4:
+			fmt.Println("capture")
+		case -1:
+			fmt.Println(-1)
+		}
+
 	})
 
 	box.Add(notebook)
