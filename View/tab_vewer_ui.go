@@ -34,7 +34,7 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	ntab.SetSizeRequest(50, 50)
 
 	ctab, _ := gtk.LabelNew("")
-	ntab.SetSizeRequest(50, 50)
+	ctab.SetSizeRequest(50, 50)
 
 	w, err := app.createWifiComponent()
 	if err != nil {

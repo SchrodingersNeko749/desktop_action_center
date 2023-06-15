@@ -9,7 +9,7 @@ type Notification struct {
 	Id             uint32
 	Icon           string
 	Summary        string
-	Message        string
+	Body           string
 	Hints          map[string]dbus.Variant
 	ExpirationTime int32
 }
@@ -29,8 +29,8 @@ func NotificationFromVariant(variant map[string]dbus.Variant) Notification {
 	if summary, ok := variant["summary"].Value().(string); ok {
 		notification.Summary = summary
 	}
-	if message, ok := variant["body"].Value().(string); ok {
-		notification.Message = message
+	if body, ok := variant["body"].Value().(string); ok {
+		notification.Body = body
 	}
 	if hints, ok := variant["hints"].Value().(map[string]dbus.Variant); ok {
 		notification.Hints = hints

@@ -7,14 +7,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/actionCenter/Model"
 	"github.com/actionCenter/View"
 
 	"github.com/gotk3/gotk3/gtk"
 )
 
 type ActionCenter struct {
-	notifCenter    *NotificationCenterService
-	actionCenterUI *View.ActionCenterUI
+	notificationCenter *NotificationCenterService
+	actionCenterUI     *View.ActionCenterUI
 }
 
 func NewActionCenter() *ActionCenter {
@@ -22,7 +23,9 @@ func NewActionCenter() *ActionCenter {
 }
 
 func (app *ActionCenter) Init() error {
-	app.notifCenter = NewNotificationCenter()
+	app.notificationCenter = NewNotificationCenter()
+	app.notificationCenter.Run()
+
 	app.actionCenterUI = &View.ActionCenterUI{}
 
 	log.Println("init()")
@@ -35,14 +38,23 @@ func (app *ActionCenter) Init() error {
 func (app *ActionCenter) Hello() string {
 	return "Hello World"
 }
+func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
+
+	if app.notificationCenter == nil {
+		panic("IS NIL")
+	}
+	ns, err := app.notificationCenter.GetNotifications()
+	if err != nil {
+		return nil, err
+	}
+	if ns == nil {
+		panic("IS NILL")
+	}
+	return ns, nil
+}
 
 func (app *ActionCenter) Run() {
-	// initializing components
-	app.notifCenter.Run()
 	app.actionCenterUI.Run()
-
-	// Test: GetNotifications
-	app.notifCenter.GetNotifications()
 
 	// handling signals
 	sigs := make(chan os.Signal, 1)
@@ -59,7 +71,7 @@ func (app *ActionCenter) Run() {
 				app.actionCenterUI.ToggleVisiblity()
 			case syscall.SIGTERM:
 				fmt.Println("Closing dbus conn")
-				app.notifCenter.conn.Close()
+				app.notificationCenter.conn.Close()
 				os.Exit(0)
 			}
 		}

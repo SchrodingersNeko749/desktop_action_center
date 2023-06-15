@@ -92,9 +92,22 @@ window {
 .notification-container row{
     background-image: none;
     background-color: #26011C;
+    padding: 2px;
 }
-/* list {
-    color: white;
-    background-color: #3892c0;
-    border-color: #1b1f20;
-  } */
+.notification-container row.activatable:active{
+    background-image: none;
+    background-color: rgba(238,238,236,0.05);
+}
+.notification-container row:selected{
+    background-color: #e01dac;
+}
+.notification-summary{
+    color:white;
+    font-family: "B Zar Bold";
+    font-size: 1.70rem;
+
+}
+.notification-body{
+    color:white;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
