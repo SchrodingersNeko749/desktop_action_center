@@ -100,6 +100,9 @@ window {
     animation: move-around 2s ease-in-out infinite alternate;
 
 }
+@keyframes identifier {
+    
+}
 .notification-body{
     color:white;
     font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;

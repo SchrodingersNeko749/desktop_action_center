@@ -11,14 +11,16 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	if err != nil {
 		return err
 	}
-	box.SetHExpand(true)
-	box.SetSizeRequest(WINDOW_WIDTH, -1)
+	//box.SetSizeRequest(WINDOW_WIDTH, -1)
 
 	notebook, err := gtk.NotebookNew()
 	if err != nil {
 		return err
 	}
-	notebook.SetHAlign(gtk.ALIGN_CENTER)
+
+	notebook.SetHExpand(false)
+	notebook.SetHAlign(gtk.ALIGN_START)
+	//notebook.SetSizeRequest(WINDOW_WIDTH, -1)
 
 	// Add tabs to the notebook
 	wtab, _ := gtk.LabelNew("")
@@ -82,6 +84,9 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 		case 3:
 			fmt.Println("notification")
 			app.ShowNotifications()
+			app.AddNotification("", "test", "Find definitions and references for functions and other symbols in this file by clicking a symbol below or in the code.")
+			app.notifications.listBox.ShowAll()
+
 		case 4:
 			fmt.Println("capture")
 		case -1:

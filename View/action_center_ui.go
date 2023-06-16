@@ -48,7 +48,10 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 	if err := app.createTabViewerContainer(); err != nil {
 		return err
 	}
-	// Add Tab Components
+
+	// test: add long notification to test word wrap
+	app.AddNotification("", "test", "Find definitions and references for functions and other symbols in this file by clicking a symbol below or in the code.")
+	app.notifications.listBox.ShowAll()
 
 	app.win.Add(app.container)
 	return nil

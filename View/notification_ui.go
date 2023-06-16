@@ -2,7 +2,6 @@ package View
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/gotk3/gotk3/gtk"
@@ -18,7 +17,7 @@ type NotificationList struct {
 	notifications []NotificationWidget
 }
 
-func getAppIcon(appIcon string, body string) (*gtk.Image, error) {
+func getAppIcon(appIcon string) (*gtk.Image, error) {
 	var icon *gtk.Image
 	var err error
 	if appIcon == "" {
@@ -53,13 +52,12 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	if err != nil {
 		return nil, err
 	}
-
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
 	if err != nil {
 		return nil, err
 	}
-	vbox.SetVExpand(true)
-	icon, err := getAppIcon(appIcon, summary)
+	vbox.SetHAlign(gtk.ALIGN_START)
+	icon, err := getAppIcon(appIcon)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +79,10 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 		return nil, err
 	}
 	bodyLabel.SetLineWrap(true)
-
+	bodyLabel.SetMaxWidthChars(1)
+	bodyLabel.SetSizeRequest(WINDOW_WIDTH-64, -1)
+	bodyLabel.SetHAlign(gtk.ALIGN_START)
+	bodyLabel.SetXAlign(0)
 	stylectx, err = bodyLabel.GetStyleContext()
 	if err != nil {
 		return nil, err
@@ -113,7 +114,6 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	style, err := listBox.GetStyleContext()
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	listBox.Connect("row-activated", func() {
 		// Get the selected row index
 		selected := app.notifications.listBox.GetSelectedRow()
-		fmt.Println(selected.GetPreferredHeight())
+		fmt.Println(selected.GetPreferredWidth())
 
 	})
 
@@ -150,21 +150,28 @@ func (app *ActionCenterUI) ShowNotifications() error {
 
 	// Delay adding the new rows until the GTK event loop has finished updating the user interface
 	for _, notification := range notifications {
-		widget, err := app.newNotificationWidget(notification.Icon, notification.Summary, notification.Body)
+		err := app.AddNotification(notification.Icon, notification.Summary, notification.Body)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
+		app.notifications.listBox.ShowAll()
 
-		row, err := gtk.ListBoxRowNew()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		row.Add(widget.container)
-		app.notifications.listBox.Add(row)
 	}
-	app.notifications.listBox.ShowAll()
+	return nil
+}
+func (app *ActionCenterUI) AddNotification(icon string, summary string, body string) error {
+	// make notification widget
+	widget, err := app.newNotificationWidget(icon, summary, body)
+	if err != nil {
+		return err
+	}
+	// make listbox row
+	row, err := gtk.ListBoxRowNew()
+	if err != nil {
+		return err
+	}
+	row.Add(widget.container)
+	app.notifications.listBox.Add(row)
+
 	return nil
 }
