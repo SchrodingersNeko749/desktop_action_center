@@ -1,9 +1,6 @@
 package View
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -37,15 +34,6 @@ func getAppIcon(appIcon string) (*gtk.Image, error) {
 }
 
 func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string, body string) (*NotificationWidget, error) {
-	if strings.Contains(body, "www.youtube.com") {
-		// Set the app icon to the YouTube icon
-		appIcon = "youtube"
-
-		// Remove the <a> tag from the body text
-		body = strings.Replace(body, "<a href=\"https://www.youtube.com/\">www.youtube.com</a>", "", -1)
-		// Remove empty lines from the body text
-		body = strings.TrimSpace(body)
-	}
 	widget := &NotificationWidget{}
 
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
@@ -56,18 +44,20 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	if err != nil {
 		return nil, err
 	}
-	vbox.SetHAlign(gtk.ALIGN_START)
 	icon, err := getAppIcon(appIcon)
 	if err != nil {
 		return nil, err
 	}
-	vbox.SetHAlign(gtk.ALIGN_START)
 	summaryLabel, err := gtk.LabelNew(summary)
 	if err != nil {
 		return nil, err
 	}
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
 	summaryLabel.SetLineWrap(true)
+	summaryLabel.SetMaxWidthChars(1)
+	summaryLabel.SetSizeRequest(WINDOW_WIDTH-200, -1)
+	summaryLabel.SetXAlign(0)
+
 	stylectx, err := summaryLabel.GetStyleContext()
 	if err != nil {
 		return nil, err
@@ -80,7 +70,7 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	}
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(WINDOW_WIDTH-64, -1)
+	bodyLabel.SetSizeRequest(WINDOW_WIDTH-200, -1)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetXAlign(0)
 	stylectx, err = bodyLabel.GetStyleContext()
@@ -120,15 +110,7 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	}
 	style.AddClass("notification-container")
 	style.AddProvider(app.containerStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	// Set selection mode to single
 	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
-
-	listBox.Connect("row-activated", func() {
-		// Get the selected row index
-		selected := app.notifications.listBox.GetSelectedRow()
-		fmt.Println(selected.GetPreferredWidth())
-
-	})
 
 	nlist := NotificationList{
 		container: container,
@@ -138,6 +120,7 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 
 	app.ShowNotifications()
 	container.Add(listBox)
+	container.SetHExpand(false)
 	return container, nil
 }
 func (app *ActionCenterUI) ShowNotifications() error {
@@ -171,6 +154,7 @@ func (app *ActionCenterUI) AddNotification(icon string, summary string, body str
 		return err
 	}
 	row.Add(widget.container)
+
 	app.notifications.listBox.Add(row)
 
 	return nil

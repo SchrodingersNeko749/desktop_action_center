@@ -49,9 +49,11 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 		return err
 	}
 
-	// test: add long notification to test word wrap
-	app.AddNotification("", "test", "Find definitions and references for functions and other symbols in this file by clicking a symbol below or in the code.")
-	app.notifications.listBox.ShowAll()
+	box, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	label, _ := gtk.LabelNew("test")
+	box.Add(label)
+	box.AddEvents(int(gdk.POINTER_MOTION_MASK))
+	box.AddEvents(int(gdk.POINTER_MOTION_HINT_MASK))
 
 	app.win.Add(app.container)
 	return nil

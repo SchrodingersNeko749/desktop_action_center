@@ -35,9 +35,6 @@ func (app *ActionCenter) Init() error {
 
 	return nil
 }
-func (app *ActionCenter) Hello() string {
-	return "Hello World"
-}
 func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 
 	if app.notificationCenter == nil {

@@ -3,6 +3,7 @@ package View
 import (
 	"fmt"
 
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -19,13 +20,15 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	}
 
 	notebook.SetHExpand(false)
-	notebook.SetHAlign(gtk.ALIGN_START)
+	notebook.SetHAlign(gtk.ALIGN_CENTER)
 	//notebook.SetSizeRequest(WINDOW_WIDTH, -1)
 
 	// Add tabs to the notebook
 	wtab, _ := gtk.LabelNew("")
 	wtab.SetSizeRequest(50, 50)
-
+	wtab.Connect("motion-notify-event", func(widget *gtk.Widget, event *gdk.Event) {
+		fmt.Println("test")
+	})
 	rtab, _ := gtk.LabelNew("")
 	rtab.SetSizeRequest(50, 50)
 
@@ -65,6 +68,7 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	}
 	stylectx.AddClass("tab-viewer")
 	stylectx.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+
 	notebook.AppendPage(w, wtab)
 	notebook.AppendPage(r, rtab)
 	notebook.AppendPage(a, atab)
@@ -73,27 +77,28 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 
 	notebook.SetCurrentPage(0)
 
-	notebook.Connect("switch-page", func() {
-		switch notebook.GetCurrentPage() {
-		case 0:
-			fmt.Println("wifi")
-		case 1:
-			fmt.Println("radio")
-		case 2:
-			fmt.Println("ai")
-		case 3:
-			fmt.Println("notification")
-			app.ShowNotifications()
-			app.AddNotification("", "test", "Find definitions and references for functions and other symbols in this file by clicking a symbol below or in the code.")
-			app.notifications.listBox.ShowAll()
+	// notebook.Connect("switch-page", func() {
+	// 	switch notebook.GetCurrentPage() {
+	// 	case 0:
+	// 		fmt.Println("wifi")
+	// 	case 1:
+	// 		fmt.Println("radio")
+	// 	case 2:
+	// 		fmt.Println("ai")
+	// 	case 3:
+	// 		fmt.Println("notification")
+	// 		app.ShowNotifications()
+	// 		app.AddNotification("youtube", "Sample youtube notification", "Check out my video!")
 
-		case 4:
-			fmt.Println("capture")
-		case -1:
-			fmt.Println(-1)
-		}
+	// 		app.notifications.listBox.ShowAll()
 
-	})
+	// 	case 4:
+	// 		fmt.Println("capture")
+	// 	case -1:
+	// 		fmt.Println(-1)
+	// 	}
+
+	// })
 
 	box.Add(notebook)
 	app.container.Add(box)

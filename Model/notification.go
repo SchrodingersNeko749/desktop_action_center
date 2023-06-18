@@ -1,6 +1,10 @@
 package Model
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/godbus/dbus/v5"
 )
 
@@ -40,4 +44,22 @@ func NotificationFromVariant(variant map[string]dbus.Variant) Notification {
 	}
 
 	return notification
+}
+func (n *Notification) FixEmptyIcon() {
+	//gtk-dialog-info
+	if strings.Contains(n.Body, "<a href=") {
+		re := regexp.MustCompile(`<a\s+href="https?://(?:[a-zA-Z0-9-]+\.)?([a-zA-Z0-9-]+)\.[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._]*)?"[^>]*>(.*?)</a>`)
+		match := re.FindStringSubmatch(n.Body)
+		if len(match) > 1 {
+			//domain := match[1]
+			n.Icon = match[1]
+			n.Body = strings.Replace(n.Body, match[0], "", -1)
+			n.Body = strings.TrimSpace(n.Body)
+		}
+
+	} else {
+		//fmt.Println("warning: no match found for app icon (notification.go)")
+		fmt.Println(n.Body)
+	}
+
 }

@@ -44,6 +44,9 @@ func (n *NotificationCenterService) GetNotifications() ([]Model.Notification, er
 	notifications := make([]Model.Notification, len(variants))
 	for i, v := range variants {
 		notifications[i] = Model.NotificationFromVariant(v)
+		if notifications[i].Icon == "" {
+			notifications[i].FixEmptyIcon()
+		}
 	}
 
 	return notifications, nil
