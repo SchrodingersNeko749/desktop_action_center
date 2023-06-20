@@ -3,6 +3,38 @@
         "type": "header"
     },
     {
-        "type": "tab-viewer"
+        "type": "tab-viewer",
+        "children":[
+            {
+                "type": "wifi",
+                "properties":{
+                    "label": ""
+                }
+            },
+            {
+                "type": "radio",
+                "properties":{
+                    "label": ""
+                }
+            },
+            {
+                "type": "ai",
+                "properties":{
+                    "label": "🤖"
+                }
+            },
+            {
+                "type": "notification",
+                "properties":{
+                    "label": ""
+                }
+            },
+            {
+                "type": "capture",
+                "properties":{
+                    "label": ""
+                }
+            }
+        ]
     }
 ]

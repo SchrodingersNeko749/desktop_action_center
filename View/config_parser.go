@@ -9,7 +9,7 @@ import (
 type Widget struct {
 	Type       string           `json:"type"`
 	Properties WidgetProperties `json:"properties"`
-	Children   []Widget         `json:"children"`
+	Children   []*Widget        `json:"children"`
 	Action     string           `json:"action"`
 	Script     string           `json:"script"`
 }

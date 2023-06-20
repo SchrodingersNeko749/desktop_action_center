@@ -63,7 +63,7 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 		return nil, err
 	}
 	stylectx.AddClass("notification-summary")
-	stylectx.AddProvider(app.containerStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	bodyLabel, err := gtk.LabelNew(body)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 		return nil, err
 	}
 	stylectx.AddClass("notification-body")
-	stylectx.AddProvider(app.containerStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	hbox.PackStart(icon, false, false, 0)
 	vbox.PackStart(summaryLabel, false, false, 0)
@@ -95,34 +95,31 @@ func (app *ActionCenterUI) clearNotification() {
 		app.notifications.listBox.Remove(app.notifications.listBox.GetRowAtIndex(0))
 	}
 }
-func (app *ActionCenterUI) createNotificationComponent() (*gtk.ScrolledWindow, error) {
-	container, err := gtk.ScrolledWindowNew(nil, nil)
-	container.SetVExpand(true)
-	//container.SetSizeRequest(-1, 500)
-	if err != nil {
-		return nil, err
-	}
-	listBox, err := gtk.ListBoxNew()
-	if err != nil {
-		return nil, err
-	}
+func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
+	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
+	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
+
+	scrollBox.SetVExpand(true)
+	scrollBox.SetHExpand(false)
+
+	listBox, _ := gtk.ListBoxNew()
 	style, err := listBox.GetStyleContext()
 	if err != nil {
 		return nil, err
 	}
 	style.AddClass("notification-container")
-	style.AddProvider(app.containerStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	listBox.SetSelectionMode(gtk.SELECTION_NONE)
 
 	nlist := NotificationList{
-		container: container,
+		container: scrollBox,
 		listBox:   listBox,
 	}
 	app.notifications = nlist
 
 	app.ShowNotifications()
-	container.Add(listBox)
-	container.SetHExpand(false)
+	scrollBox.Add(listBox)
+	container.Add(scrollBox)
 	return container, nil
 }
 func (app *ActionCenterUI) ShowNotifications() error {

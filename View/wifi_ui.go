@@ -1,8 +1,6 @@
 package View
 
 import (
-	"fmt"
-
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -11,9 +9,6 @@ func (app *ActionCenterUI) createWifiComponent() (*gtk.Box, error) {
 	container.SetHExpand(false)
 	if err != nil {
 		return nil, err
-	}
-	if app.actionCenter == nil {
-		fmt.Println("is null")
 	}
 	label, err := gtk.LabelNew("wifi")
 

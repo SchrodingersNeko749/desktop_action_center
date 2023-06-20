@@ -1,6 +1,7 @@
 package View
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -13,18 +14,14 @@ const WINDOW_WIDTH = 700
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
-	containerStyleProvider *gtk.CssProvider
+	componentStyleProvider *gtk.CssProvider
 	container              *gtk.Box
 	actionCenter           Command.ActionCenterInterface
 	notifications          NotificationList
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {
-	if app.win.IsVisible() {
-		app.win.Hide()
-	} else {
-		app.win.ShowAll()
-	}
+	app.win.SetVisible(!app.win.GetVisible())
 }
 
 func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename string) error {
@@ -46,26 +43,55 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename s
 	app.container = c
 	// Add Containers
 	for _, widget := range ws {
-		switch widget.Type {
-		case "header":
-			if err := app.createHeaderContainer(); err != nil {
-				return err
-			}
-		case "tab-viewer":
-			if err := app.createTabViewerContainer(); err != nil {
-				return err
-			}
+		widgetContainer, err := app.createComponent(widget)
+		if err != nil {
+			return err
 		}
+		app.container.Add(widgetContainer)
 	}
-
 	app.win.Add(app.container)
 	return nil
 }
-func (app *ActionCenterUI) createHeaderContainer() error {
+func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
+	var component *gtk.Box
+	var notebook *gtk.Notebook // for tabviewer
+	var err error
+	switch widget.Type {
+	case "header":
+		if component, err = app.createHeaderComponent(); err != nil {
+			return nil, err
+		}
+	case "tab-viewer":
+		if component, notebook, err = app.createTabViewerContainer(widget); err != nil {
+			return nil, err
+		}
+	default:
+		// Handle unrecognized widget types
+		return nil, fmt.Errorf("unrecognized widget type: %s", widget.Type)
+	}
+
+	// Recursively call the method for the children of the widget
+	for _, child := range widget.Children {
+
+		if widget.Type == "tab-viewer" {
+			fmt.Println(child.Properties.Label)
+			app.addTab(notebook, child)
+		} else {
+			childContainer, err := app.createComponent(*child)
+			if err != nil {
+				return nil, err
+			}
+			component.Add(childContainer)
+		}
+	}
+
+	return component, nil
+}
+func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	l, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
 	l.SetName("clock")
@@ -76,23 +102,21 @@ func (app *ActionCenterUI) createHeaderContainer() error {
 	// Apply the CSS provider to the label widget's style context
 	lStyle, err := l.GetStyleContext()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	lStyle.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	lStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	// Apply the CSS provider to the box container's style context
 	vboxStyle, err := vbox.GetStyleContext()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	vboxStyle.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	vboxStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
 	// Add the box container to the window
 
 	vbox.Add(l)
-	app.container.Add(vbox)
-
-	return nil
+	return vbox, nil
 }
 func (app *ActionCenterUI) initWindow() error {
 	gtk.Init(nil)
@@ -128,7 +152,7 @@ func (app *ActionCenterUI) initWindow() error {
 	if err != nil {
 		return err
 	}
-	style.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	style.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	return nil
 }
@@ -142,7 +166,7 @@ func (app *ActionCenterUI) initCssStyles() error {
 	if err := provider.LoadFromPath("assets/window.css"); err != nil {
 		return err
 	}
-	app.containerStyleProvider = provider
+	app.componentStyleProvider = provider
 	return nil
 }
 func (app *ActionCenterUI) Run() {

@@ -2,79 +2,36 @@ package View
 
 import (
 	"fmt"
+	"log"
+	"os"
 
-	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-func (app *ActionCenterUI) createTabViewerContainer() error {
+func (app *ActionCenterUI) createTabViewerContainer(configWidget Widget) (*gtk.Box, *gtk.Notebook, error) {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	//box.SetSizeRequest(WINDOW_WIDTH, -1)
 
+	for _, child := range configWidget.Children {
+		fmt.Println(child.Type)
+	}
 	notebook, err := gtk.NotebookNew()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	notebook.SetHExpand(false)
 	notebook.SetHAlign(gtk.ALIGN_CENTER)
-	//notebook.SetSizeRequest(WINDOW_WIDTH, -1)
-
-	// Add tabs to the notebook
-	wtab, _ := gtk.LabelNew("")
-	wtab.SetSizeRequest(50, 50)
-	wtab.Connect("motion-notify-event", func(widget *gtk.Widget, event *gdk.Event) {
-		fmt.Println("test")
-	})
-	rtab, _ := gtk.LabelNew("")
-	rtab.SetSizeRequest(50, 50)
-
-	atab, _ := gtk.LabelNew("🤖")
-	atab.SetSizeRequest(50, 50)
-
-	ntab, _ := gtk.LabelNew("")
-	ntab.SetSizeRequest(50, 50)
-
-	ctab, _ := gtk.LabelNew("")
-	ctab.SetSizeRequest(50, 50)
-
-	w, err := app.createWifiComponent()
-	if err != nil {
-		return err
-	}
-	r, err := app.createRadioComponent()
-	if err != nil {
-		return err
-	}
-	a, err := app.createAiComponent()
-	if err != nil {
-		return err
-	}
-	n, err := app.createNotificationComponent()
-	if err != nil {
-		return err
-	}
-	c, err := app.createScreenCaptureComponent()
-	if err != nil {
-		return err
-	}
 
 	stylectx, err := notebook.GetStyleContext()
 	if err != nil {
-		return nil
+		return nil, nil, err
 	}
 	stylectx.AddClass("tab-viewer")
-	stylectx.AddProvider(app.containerStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-
-	notebook.AppendPage(w, wtab)
-	notebook.AppendPage(r, rtab)
-	notebook.AppendPage(a, atab)
-	notebook.AppendPage(n, ntab)
-	notebook.AppendPage(c, ctab)
-
+	stylectx.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	notebook.SetCurrentPage(0)
 
 	notebook.Connect("switch-page", func() {
@@ -99,6 +56,32 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 	})
 
 	box.Add(notebook)
-	app.container.Add(box)
-	return nil
+	return box, notebook, nil
+}
+func (app *ActionCenterUI) addTab(notebook *gtk.Notebook, tab *Widget) {
+	var page *gtk.Box
+	tabLabel, _ := gtk.LabelNew(tab.Properties.Label)
+	tabLabel.SetSizeRequest(50, 50)
+	var err error
+
+	switch tab.Type {
+	case "wifi":
+		page, err = app.createWifiComponent()
+	case "radio":
+		page, _ = app.createRadioComponent()
+	case "ai":
+		page, _ = app.createAiComponent()
+	case "notification":
+		page, _ = app.createNotificationComponent()
+	case "capture":
+		page, _ = app.createScreenCaptureComponent()
+	default:
+		fmt.Println("invalid tab")
+		os.Exit(1)
+	}
+	if err != nil {
+		log.Fatalln(err)
+	}
+	notebook.AppendPage(page, tabLabel)
+
 }
