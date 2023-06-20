@@ -29,7 +29,8 @@ func (app *ActionCenter) Init() error {
 	app.actionCenterUI = &View.ActionCenterUI{}
 
 	log.Println("init()")
-	if err := app.actionCenterUI.CreateUI(app); err != nil {
+
+	if err := app.actionCenterUI.CreateUI(app, "test.json"); err != nil {
 		return err
 	}
 
@@ -37,15 +38,9 @@ func (app *ActionCenter) Init() error {
 }
 func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 
-	if app.notificationCenter == nil {
-		panic("IS NIL")
-	}
 	ns, err := app.notificationCenter.GetNotifications()
 	if err != nil {
 		return nil, err
-	}
-	if ns == nil {
-		panic("IS NILL")
 	}
 	return ns, nil
 }

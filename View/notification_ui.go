@@ -9,7 +9,7 @@ type NotificationWidget struct {
 	id        int
 }
 type NotificationList struct {
-	container     *gtk.Box
+	container     *gtk.ScrolledWindow
 	listBox       *gtk.ListBox
 	notifications []NotificationWidget
 }
@@ -95,8 +95,10 @@ func (app *ActionCenterUI) clearNotification() {
 		app.notifications.listBox.Remove(app.notifications.listBox.GetRowAtIndex(0))
 	}
 }
-func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
-	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+func (app *ActionCenterUI) createNotificationComponent() (*gtk.ScrolledWindow, error) {
+	container, err := gtk.ScrolledWindowNew(nil, nil)
+	container.SetVExpand(true)
+	//container.SetSizeRequest(-1, 500)
 	if err != nil {
 		return nil, err
 	}

@@ -77,28 +77,26 @@ func (app *ActionCenterUI) createTabViewerContainer() error {
 
 	notebook.SetCurrentPage(0)
 
-	// notebook.Connect("switch-page", func() {
-	// 	switch notebook.GetCurrentPage() {
-	// 	case 0:
-	// 		fmt.Println("wifi")
-	// 	case 1:
-	// 		fmt.Println("radio")
-	// 	case 2:
-	// 		fmt.Println("ai")
-	// 	case 3:
-	// 		fmt.Println("notification")
-	// 		app.ShowNotifications()
-	// 		app.AddNotification("youtube", "Sample youtube notification", "Check out my video!")
+	notebook.Connect("switch-page", func() {
+		switch notebook.GetCurrentPage() {
+		case 0:
+			fmt.Println("wifi")
+		case 1:
+			fmt.Println("radio")
+		case 2:
+			fmt.Println("ai")
+		case 3:
+			fmt.Println("notification")
+			app.ShowNotifications()
+			app.notifications.listBox.ShowAll()
 
-	// 		app.notifications.listBox.ShowAll()
+		case 4:
+			fmt.Println("capture")
+		case -1:
+			fmt.Println(-1)
+		}
 
-	// 	case 4:
-	// 		fmt.Println("capture")
-	// 	case -1:
-	// 		fmt.Println(-1)
-	// 	}
-
-	// })
+	})
 
 	box.Add(notebook)
 	app.container.Add(box)

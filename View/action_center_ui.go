@@ -27,7 +27,7 @@ func (app *ActionCenterUI) ToggleVisiblity() {
 	}
 }
 
-func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
+func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename string) error {
 	// Initialize the window
 	if err := app.initWindow(); err != nil {
 		return err
@@ -35,25 +35,28 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 	// make the actioncenter handler
 	app.actionCenter = ac
 
+	ws, err := GetWidgetsFromConfig("View/test.json")
+	if err != nil {
+		return err
+	}
 	c, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return err
 	}
 	app.container = c
 	// Add Containers
-	if err := app.createHeaderContainer(); err != nil {
-		return err
+	for _, widget := range ws {
+		switch widget.Type {
+		case "header":
+			if err := app.createHeaderContainer(); err != nil {
+				return err
+			}
+		case "tab-viewer":
+			if err := app.createTabViewerContainer(); err != nil {
+				return err
+			}
+		}
 	}
-
-	if err := app.createTabViewerContainer(); err != nil {
-		return err
-	}
-
-	box, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	label, _ := gtk.LabelNew("test")
-	box.Add(label)
-	box.AddEvents(int(gdk.POINTER_MOTION_MASK))
-	box.AddEvents(int(gdk.POINTER_MOTION_HINT_MASK))
 
 	app.win.Add(app.container)
 	return nil
