@@ -2,7 +2,6 @@ package Service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,12 +23,12 @@ func NewActionCenter() *ActionCenter {
 
 func (app *ActionCenter) Init() error {
 	app.notificationCenter = NewNotificationCenter()
-	app.notificationCenter.Run()
+	if err := app.notificationCenter.Init(app); err != nil {
+		return err
+	}
+	go app.notificationCenter.Run()
 
 	app.actionCenterUI = &View.ActionCenterUI{}
-
-	log.Println("init()")
-
 	if err := app.actionCenterUI.CreateUI(app, "test.json"); err != nil {
 		return err
 	}
@@ -43,6 +42,17 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 		return nil, err
 	}
 	return ns, nil
+}
+func (app *ActionCenter) AddNotification(n Model.Notification) error {
+	err := app.actionCenterUI.AddNotification(n)
+	if err != nil {
+		return err
+	}
+	app.actionCenterUI.ShowAll()
+	return nil
+}
+func (app *ActionCenter) Hello(name string) string {
+	return fmt.Sprintf("Hello %s", name)
 }
 
 func (app *ActionCenter) Run() {

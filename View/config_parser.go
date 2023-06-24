@@ -2,7 +2,6 @@ package View
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -30,6 +29,5 @@ func GetWidgetsFromConfig(filename string) ([]Widget, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("initializing json")
 	return widgets, nil
 }

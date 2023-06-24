@@ -2,7 +2,6 @@ package View
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/actionCenter/Command"
@@ -16,7 +15,7 @@ type ActionCenterUI struct {
 	win                    *gtk.Window
 	componentStyleProvider *gtk.CssProvider
 	container              *gtk.Box
-	actionCenter           Command.ActionCenterInterface
+	actionCenterHandler    Command.ActionCenterInterface
 	notifications          NotificationList
 }
 
@@ -30,7 +29,7 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename s
 		return err
 	}
 	// make the actioncenter handler
-	app.actionCenter = ac
+	app.actionCenterHandler = ac
 
 	ws, err := GetWidgetsFromConfig("View/test.json")
 	if err != nil {
@@ -65,6 +64,26 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 		if component, notebook, err = app.createTabViewerContainer(widget); err != nil {
 			return nil, err
 		}
+	case "wifi":
+		if component, err = app.createWifiComponent(); err != nil {
+			return nil, err
+		}
+	case "radio":
+		if component, err = app.createRadioComponent(); err != nil {
+			return nil, err
+		}
+	case "ai":
+		if component, err = app.createAiComponent(); err != nil {
+			return nil, err
+		}
+	case "notification":
+		if component, err = app.createNotificationComponent(); err != nil {
+			return nil, err
+		}
+	case "capture":
+		if component, err = app.createScreenCaptureComponent(); err != nil {
+			return nil, err
+		}
 	default:
 		// Handle unrecognized widget types
 		return nil, fmt.Errorf("unrecognized widget type: %s", widget.Type)
@@ -72,10 +91,12 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 
 	// Recursively call the method for the children of the widget
 	for _, child := range widget.Children {
-
 		if widget.Type == "tab-viewer" {
-			fmt.Println(child.Properties.Label)
-			app.addTab(notebook, child)
+			childComponent, err := app.createComponent(*child)
+			if err != nil {
+				return nil, err
+			}
+			app.addTab(notebook, child.Properties.Label, childComponent)
 		} else {
 			childContainer, err := app.createComponent(*child)
 			if err != nil {
@@ -96,7 +117,7 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	l, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
 	l.SetName("clock")
 	if err != nil {
-		log.Fatal("Unable to create label:", err)
+		return nil, err
 	}
 
 	// Apply the CSS provider to the label widget's style context
@@ -171,5 +192,8 @@ func (app *ActionCenterUI) initCssStyles() error {
 }
 func (app *ActionCenterUI) Run() {
 	app.win.SetPosition(gtk.WIN_POS_NONE)
+	app.win.ShowAll()
+}
+func (app *ActionCenterUI) ShowAll() {
 	app.win.ShowAll()
 }

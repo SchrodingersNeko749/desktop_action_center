@@ -1,6 +1,10 @@
 package View
 
 import (
+	"fmt"
+
+	"github.com/actionCenter/Model"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -14,26 +18,22 @@ type NotificationList struct {
 	notifications []NotificationWidget
 }
 
-func getAppIcon(appIcon string) (*gtk.Image, error) {
-	var icon *gtk.Image
-	var err error
-	if appIcon == "" {
-		icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
-		if err != nil {
-			return nil, err
-		}
+func resize(icon *gtk.Image) {
+	const (
+		newWidth  = 64
+		newHeight = 64
+	)
 
-	} else {
-		icon, err = gtk.ImageNewFromIconName(appIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
-		if err != nil {
-			return nil, err
-		}
-	}
-	icon.SetPixelSize(64)
-	return icon, nil
+	// Get the current pixbuf from the image
+	pixbuf := icon.GetPixbuf()
+
+	// Scale the pixbuf to the new size
+	scaledPixbuf, _ := pixbuf.ScaleSimple(newWidth, newHeight, gdk.INTERP_BILINEAR)
+
+	// Update the image with the scaled pixbuf
+	icon.SetFromPixbuf(scaledPixbuf)
 }
-
-func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string, body string) (*NotificationWidget, error) {
+func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*NotificationWidget, error) {
 	widget := &NotificationWidget{}
 
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
@@ -44,11 +44,28 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	if err != nil {
 		return nil, err
 	}
-	icon, err := getAppIcon(appIcon)
+	// notification icon
+	var icon *gtk.Image
+	if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
+		icon, err = gtk.ImageNewFromFile(customImagePath)
+		resize(icon)
+	} else {
+		if n.AppIcon == "" {
+			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
+			icon.SetPixelSize(64)
+
+		} else {
+			icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
+			icon.SetPixelSize(64)
+
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	summaryLabel, err := gtk.LabelNew(summary)
+
+	summaryLabel, err := gtk.LabelNew(n.Summary)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +81,7 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	}
 	stylectx.AddClass("notification-summary")
 	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	bodyLabel, err := gtk.LabelNew(body)
+	bodyLabel, err := gtk.LabelNew(n.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +104,6 @@ func (app *ActionCenterUI) newNotificationWidget(appIcon string, summary string,
 	hbox.PackStart(vbox, true, true, 0)
 
 	widget.container = hbox
-
 	return widget, nil
 }
 func (app *ActionCenterUI) clearNotification() {
@@ -117,7 +133,7 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	}
 	app.notifications = nlist
 
-	app.ShowNotifications()
+	//app.ShowNotifications()
 	scrollBox.Add(listBox)
 	container.Add(scrollBox)
 	return container, nil
@@ -125,25 +141,26 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 func (app *ActionCenterUI) ShowNotifications() error {
 
 	app.clearNotification()
-	notifications, err := app.actionCenter.GetNotifications()
+	notifications, err := app.actionCenterHandler.GetNotifications()
 	if err != nil {
 		return err
 	}
+	fmt.Println(notifications)
+	n := Model.NewNotification("chrom", 0, "chrom", "test", "very test", nil, nil, 0)
+	app.AddNotification(n)
+	// for _, notification := range notifications {
+	// 	//err := app.AddNotification(notification.AppIcon, notification.Summary, notification.Body)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	app.notifications.listBox.ShowAll()
 
-	// Delay adding the new rows until the GTK event loop has finished updating the user interface
-	for _, notification := range notifications {
-		err := app.AddNotification(notification.Icon, notification.Summary, notification.Body)
-		if err != nil {
-			return err
-		}
-		app.notifications.listBox.ShowAll()
-
-	}
+	// }
 	return nil
 }
-func (app *ActionCenterUI) AddNotification(icon string, summary string, body string) error {
+func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
 	// make notification widget
-	widget, err := app.newNotificationWidget(icon, summary, body)
+	widget, err := app.newNotificationWidget(n)
 	if err != nil {
 		return err
 	}

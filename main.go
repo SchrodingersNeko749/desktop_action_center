@@ -11,7 +11,7 @@ func main() {
 	actionCenter := Service.NewActionCenter()
 
 	if err := actionCenter.Init(); err != nil {
-		log.Fatal("Unable to initialize UI:", err)
+		log.Fatal("Unable to initialize action center:", err)
 	}
 	actionCenter.Run()
 }
