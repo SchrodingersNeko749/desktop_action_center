@@ -18,21 +18,67 @@ type NotificationList struct {
 	notifications []NotificationWidget
 }
 
-func resize(icon *gtk.Image) {
-	const (
-		newWidth  = 64
-		newHeight = 64
-	)
+func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
+	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
+	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 
-	// Get the current pixbuf from the image
-	pixbuf := icon.GetPixbuf()
+	scrollBox.SetVExpand(true)
+	scrollBox.SetHExpand(false)
 
-	// Scale the pixbuf to the new size
-	scaledPixbuf, _ := pixbuf.ScaleSimple(newWidth, newHeight, gdk.INTERP_BILINEAR)
+	label, err := gtk.LabelNew("Notifications")
+	if err != nil {
+		return nil, err
+	}
+	container.Add(label)
 
-	// Update the image with the scaled pixbuf
-	icon.SetFromPixbuf(scaledPixbuf)
+	clearBtn, err := gtk.ButtonNewWithLabel("Clear")
+	if err != nil {
+		return nil, err
+	}
+	clearBtn.Connect("clicked", func() {
+		app.clearNotification()
+	})
+	container.Add(clearBtn)
+
+	listBox, _ := gtk.ListBoxNew()
+	style, err := listBox.GetStyleContext()
+	if err != nil {
+		return nil, err
+	}
+	style.AddClass("notification-container")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	listBox.SetSelectionMode(gtk.SELECTION_NONE)
+
+	nlist := NotificationList{
+		container: scrollBox,
+		listBox:   listBox,
+	}
+	app.notifications = nlist
+
+	//app.ShowNotifications()
+	scrollBox.Add(listBox)
+	container.Add(scrollBox)
+	return container, nil
 }
+
+func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
+	// make notification widget
+	widget, err := app.newNotificationWidget(n)
+	if err != nil {
+		return err
+	}
+	// make listbox row
+	row, err := gtk.ListBoxRowNew()
+	if err != nil {
+		return err
+	}
+	row.Add(widget.container)
+
+	app.notifications.listBox.Add(row)
+
+	return nil
+}
+
 func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*NotificationWidget, error) {
 	widget := &NotificationWidget{}
 
@@ -53,16 +99,32 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 		if n.AppIcon == "" {
 			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
 			icon.SetPixelSize(64)
-
 		} else {
 			icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
 			icon.SetPixelSize(64)
-
 		}
 	}
 
 	if err != nil {
 		return nil, err
+	}
+
+	if _, ok := n.Hints["image-data"]; ok {
+		width := n.Hints["image-data"].Value().([]interface{})[0].(int32)
+		height := n.Hints["image-data"].Value().([]interface{})[1].(int32)
+		rowStride := n.Hints["image-data"].Value().([]interface{})[2].(int32)
+		hasAlpha := n.Hints["image-data"].Value().([]interface{})[3].(bool)
+		bitsPerSample := n.Hints["image-data"].Value().([]interface{})[4].(int32)
+		// channels := n.Hints["image-data"].Value().([]interface{})[5].(int32)
+
+		img := n.Hints["image-data"].Value().([]interface{})[6].([]byte)
+		// load image with pixbuf
+		pixbuf, err := gdk.PixbufNewFromData(img, gdk.COLORSPACE_RGB, hasAlpha, int(bitsPerSample), int(width), int(height), int(rowStride))
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		icon, err = gtk.ImageNewFromPixbuf(pixbuf)
 	}
 
 	summaryLabel, err := gtk.LabelNew(n.Summary)
@@ -106,53 +168,7 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 	widget.container = hbox
 	return widget, nil
 }
-func (app *ActionCenterUI) clearNotification() {
-	for app.notifications.listBox.GetChildren().Length() > 0 {
-		app.notifications.listBox.Remove(app.notifications.listBox.GetRowAtIndex(0))
-	}
-}
-func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
-	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
-	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 
-	scrollBox.SetVExpand(true)
-	scrollBox.SetHExpand(false)
-
-	label, err := gtk.LabelNew("Notifications")
-	if err != nil {
-		return nil, err
-	}
-	container.Add(label)
-
-	clearBtn, err := gtk.ButtonNewWithLabel("Clear")
-	if err != nil {
-		return nil, err
-	}
-	clearBtn.Connect("clicked", func() {
-		app.clearNotification()
-	})
-	container.Add(clearBtn)
-
-	listBox, _ := gtk.ListBoxNew()
-	style, err := listBox.GetStyleContext()
-	if err != nil {
-		return nil, err
-	}
-	style.AddClass("notification-container")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	listBox.SetSelectionMode(gtk.SELECTION_NONE)
-
-	nlist := NotificationList{
-		container: scrollBox,
-		listBox:   listBox,
-	}
-	app.notifications = nlist
-
-	//app.ShowNotifications()
-	scrollBox.Add(listBox)
-	container.Add(scrollBox)
-	return container, nil
-}
 func (app *ActionCenterUI) ShowNotifications() error {
 
 	app.clearNotification()
@@ -173,20 +189,25 @@ func (app *ActionCenterUI) ShowNotifications() error {
 	// }
 	return nil
 }
-func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
-	// make notification widget
-	widget, err := app.newNotificationWidget(n)
-	if err != nil {
-		return err
-	}
-	// make listbox row
-	row, err := gtk.ListBoxRowNew()
-	if err != nil {
-		return err
-	}
-	row.Add(widget.container)
 
-	app.notifications.listBox.Add(row)
+func (app *ActionCenterUI) clearNotification() {
+	for app.notifications.listBox.GetChildren().Length() > 0 {
+		app.notifications.listBox.Remove(app.notifications.listBox.GetRowAtIndex(0))
+	}
+}
 
-	return nil
+func resize(icon *gtk.Image) {
+	const (
+		newWidth  = 64
+		newHeight = 64
+	)
+
+	// Get the current pixbuf from the image
+	pixbuf := icon.GetPixbuf()
+
+	// Scale the pixbuf to the new size
+	scaledPixbuf, _ := pixbuf.ScaleSimple(newWidth, newHeight, gdk.INTERP_BILINEAR)
+
+	// Update the image with the scaled pixbuf
+	icon.SetFromPixbuf(scaledPixbuf)
 }
