@@ -45,23 +45,5 @@ func (n *NotificationCenterService) Run() {
 
 }
 func (n *NotificationCenterService) GetNotifications() ([]Model.Notification, error) {
-	call := n.obj.Call("org.dunstproject.cmd0.NotificationListHistory", 0)
-	if call.Err != nil {
-		return nil, fmt.Errorf("error calling NotificationListHistory: %w", call.Err)
-	}
-
-	var variants []map[string]dbus.Variant
-	if err := call.Store(&variants); err != nil {
-		return nil, fmt.Errorf("error decoding notification variants: %w", err)
-	}
-
-	notifications := make([]Model.Notification, len(variants))
-	for i, v := range variants {
-		notifications[i] = Model.NotificationFromVariant(v)
-		if notifications[i].AppIcon == "" {
-			notifications[i].RemoveHyperLinkFromBody()
-		}
-	}
-
-	return notifications, nil
+	return nil, nil
 }

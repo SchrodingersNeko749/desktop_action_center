@@ -1,8 +1,6 @@
 package View
 
 import (
-	"fmt"
-
 	"github.com/actionCenter/Model"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
@@ -18,17 +16,12 @@ type NotificationList struct {
 	notifications []NotificationWidget
 }
 
-func resize(icon *gtk.Image) {
-	const (
-		newWidth  = 64
-		newHeight = 64
-	)
-
+func resize(icon *gtk.Image, width int, height int) {
 	// Get the current pixbuf from the image
 	pixbuf := icon.GetPixbuf()
 
 	// Scale the pixbuf to the new size
-	scaledPixbuf, _ := pixbuf.ScaleSimple(newWidth, newHeight, gdk.INTERP_BILINEAR)
+	scaledPixbuf, _ := pixbuf.ScaleSimple(width, height, gdk.INTERP_BILINEAR)
 
 	// Update the image with the scaled pixbuf
 	icon.SetFromPixbuf(scaledPixbuf)
@@ -48,7 +41,7 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 	var icon *gtk.Image
 	if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
 		icon, err = gtk.ImageNewFromFile(customImagePath)
-		resize(icon)
+		resize(icon, 64, 64)
 	} else {
 		if n.AppIcon == "" {
 			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
@@ -138,24 +131,10 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	container.Add(scrollBox)
 	return container, nil
 }
-func (app *ActionCenterUI) ShowNotifications() error {
+func (app *ActionCenterUI) LoadNotifications() error {
 
 	app.clearNotification()
-	notifications, err := app.actionCenterHandler.GetNotifications()
-	if err != nil {
-		return err
-	}
-	fmt.Println(notifications)
-	n := Model.NewNotification("chrom", 0, "chrom", "test", "very test", nil, nil, 0)
-	app.AddNotification(n)
-	// for _, notification := range notifications {
-	// 	//err := app.AddNotification(notification.AppIcon, notification.Summary, notification.Body)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	app.notifications.listBox.ShowAll()
 
-	// }
 	return nil
 }
 func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
@@ -172,6 +151,6 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
 	row.Add(widget.container)
 
 	app.notifications.listBox.Add(row)
-
+	app.notifications.listBox.ShowAll()
 	return nil
 }
