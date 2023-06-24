@@ -111,6 +111,21 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	scrollBox.SetVExpand(true)
 	scrollBox.SetHExpand(false)
 
+	label, err := gtk.LabelNew("Notifications")
+	if err != nil {
+		return nil, err
+	}
+	container.Add(label)
+
+	clearBtn, err := gtk.ButtonNewWithLabel("Clear")
+	if err != nil {
+		return nil, err
+	}
+	clearBtn.Connect("clicked", func() {
+		app.clearNotification()
+	})
+	container.Add(clearBtn)
+
 	listBox, _ := gtk.ListBoxNew()
 	style, err := listBox.GetStyleContext()
 	if err != nil {
