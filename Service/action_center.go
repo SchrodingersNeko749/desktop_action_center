@@ -51,9 +51,6 @@ func (app *ActionCenter) AddNotification(n Model.Notification) error {
 	app.actionCenterUI.ShowAll()
 	return nil
 }
-func (app *ActionCenter) Hello(name string) string {
-	return fmt.Sprintf("Hello %s", name)
-}
 
 func (app *ActionCenter) Run() {
 	app.actionCenterUI.Run()
