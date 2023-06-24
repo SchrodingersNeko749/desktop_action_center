@@ -48,7 +48,7 @@ func (app *ActionCenter) AddNotification(n Model.Notification) error {
 	if err != nil {
 		return err
 	}
-	app.actionCenterUI.ShowAll()
+	//app.actionCenterUI.ShowAll()
 	return nil
 }
 
@@ -66,7 +66,6 @@ func (app *ActionCenter) Run() {
 			fmt.Println(sig)
 			switch sig {
 			case syscall.SIGUSR1:
-				// Perform any necessary actions for SIGUSR1
 				app.actionCenterUI.ToggleVisiblity()
 			case syscall.SIGTERM:
 				fmt.Println("Closing dbus conn")
