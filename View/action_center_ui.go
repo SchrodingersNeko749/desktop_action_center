@@ -22,6 +22,7 @@ type ActionCenterUI struct {
 	container              *gtk.Box
 	actionCenterHandler    Command.ActionCenterInterface
 	notifications          NotificationList
+	aimessages             NotificationList
 	cfg                    *Data.Config
 }
 

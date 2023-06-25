@@ -8,7 +8,7 @@ window {
 #clock{
     color: rgb(250, 113, 113);
     background-color: transparent;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family: 'Pro Font Windows', 'monospace';
     font-size: 3rem;
     padding: 20px;
 }
@@ -73,4 +73,21 @@ window {
 
 GtkMenuItem:hover {
     background-color: rgb(255, 143, 143);
+}
+
+.ai-container-header{
+    font-family: 'Pro Font Windows', 'monospace';
+}
+.ai-container{
+    background-color: transparent;
+}
+.ai-container row.activatable{
+    background-color: rgb(255, 143, 143);
+}
+.ai-scrollbox{
+    background-color: transparent;
+}
+.ai-inputbox{
+    background-color: transparent;
+    border: 1px solid rgb(250, 113, 113);
 }
