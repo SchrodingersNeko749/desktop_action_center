@@ -1,0 +1,91 @@
+
+@import url("colors.css");
+window {
+    background: radial-gradient(rgba(48, 48, 48, 0.624),rgba(48, 48, 48, 0.874),rgb(48, 48, 48));
+}
+
+* {
+    border-style: none;
+}
+
+#clock{
+    color: @foreground;
+    background-color: transparent;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 3rem;
+    padding: 20px;
+}
+.tab{
+    color : #d9d9d9;
+    font-size: 2rem;
+    margin: 5px;
+
+}
+.tab-viewer > header {
+    background-color: transparent;
+}
+
+.tab-viewer > .header > .button:active {
+    color: #fff;
+    padding: 2rem;
+}
+
+/* CSS style for the notebook container */
+
+.tab-viewer tab{
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';
+    background-color: rgb(84, 84, 84);
+}
+.tab-viewer tab:hover{
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';   
+    background-color: @widget-hover;
+}
+.tab-viewer stack{
+    background-color: transparent;
+    padding: 1rem;
+}
+.tab-viewer > header.top > tabs > tab:checked {
+    background-image: none;
+    background-color: @widget-selected;
+}
+.tab-viewer > header{
+    padding :1rem;
+}
+/* css style for notification container */
+.notification-container-header{
+    color:white;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 1.7rem;
+}
+.notification-container{
+    background-color: rgba(48, 48, 48, 0.624);
+    padding: 1rem;
+}
+.notification-widget{
+    border-bottom: 1px groove rgba(84, 84, 84, 0.642);
+    padding: 8px;
+}
+
+.notification-scrollbox{
+    background-color: rgba(62, 62, 62, 0.789);
+}
+.notification-container row.activatable:hover{
+    background-color: rgb(255, 143, 143);
+}
+.notification-summary{
+    color:white;
+    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 2rem;
+}
+
+.notification-body{
+    color:white;
+    font-size: 1.25rem;
+    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}

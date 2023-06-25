@@ -9,10 +9,11 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const WINDOW_WIDTH = 575
+const WINDOW_WIDTH = 670
 const ICON_SIZE = 64
 const HORIZONTAL_SPACING = 24
 const VERTICAL_SPACING = 32
+const CSS_THEME_FILE = "neko.css"
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
@@ -164,13 +165,13 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetResizable(false)
 	visual, _ := screen.GetRGBAVisual()
 	app.win.SetVisual(visual)
-	app.win.SetDecorated(false)
+	//app.win.SetDecorated(false)
 
-	provider, err := gtk.CssProviderNew()
-	err = provider.LoadFromPath("assets/window.css")
+	provider, _ := gtk.CssProviderNew()
+	err = provider.LoadFromPath("assets/" + CSS_THEME_FILE)
 
 	if err != nil {
-		fmt.Println("Error loading assets/window.css")
+		fmt.Println("Error loading assets/" + CSS_THEME_FILE)
 		return err
 	}
 
