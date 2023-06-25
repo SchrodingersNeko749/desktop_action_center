@@ -13,7 +13,7 @@ import (
 )
 
 type ActionCenter struct {
-	notificationCenter *NotificationCenterService
+	notificationCenter *NotificationServer
 	actionCenterUI     *View.ActionCenterUI
 }
 
@@ -22,11 +22,8 @@ func NewActionCenter() *ActionCenter {
 }
 
 func (app *ActionCenter) Init() error {
-	app.notificationCenter = NewNotificationCenter()
-	if err := app.notificationCenter.Init(app); err != nil {
-		return err
-	}
-	go app.notificationCenter.Run()
+	app.notificationCenter = NewNotificationServer()
+	go app.notificationCenter.Init(app)
 
 	app.actionCenterUI = &View.ActionCenterUI{}
 	if err := app.actionCenterUI.CreateUI(app, "test.json"); err != nil {
@@ -35,6 +32,7 @@ func (app *ActionCenter) Init() error {
 
 	return nil
 }
+
 func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 
 	ns, err := app.notificationCenter.GetNotifications()
@@ -48,7 +46,7 @@ func (app *ActionCenter) AddNotification(n Model.Notification) error {
 	if err != nil {
 		return err
 	}
-	//app.actionCenterUI.ShowAll()
+	app.actionCenterUI.ShowAll()
 	return nil
 }
 

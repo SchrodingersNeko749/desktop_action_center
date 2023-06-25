@@ -54,144 +54,77 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 		listBox:   listBox,
 	}
 	app.notifications = nlist
-
-	//app.ShowNotifications()
 	scrollBox.Add(listBox)
 	container.Add(scrollBox)
 	return container, nil
 }
 
 func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
-	// make notification widget
-	widget, err := app.newNotificationWidget(n)
-	if err != nil {
-		return err
-	}
-	// make listbox row
-	row, err := gtk.ListBoxRowNew()
-	if err != nil {
-		return err
-	}
-	row.Add(widget.container)
-
-	app.notifications.listBox.Add(row)
-	app.notifications.container.ShowAll()
-	return nil
-}
-
-func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*NotificationWidget, error) {
-	widget := &NotificationWidget{}
-
+	widget := NotificationWidget{}
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
-	if err != nil {
-		return nil, err
-	}
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
-	if err != nil {
-		return nil, err
-	}
-	// notification icon
+	elementWidth := app.notifications.listBox.GetAllocatedWidth() - ICON_SIZE - HORIZONTAL_SPACING
+
 	var icon *gtk.Image = nil
-	if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
-		icon, err = gtk.ImageNewFromFile(customImagePath)
-	} else {
-		if n.AppIcon == "" {
-			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_BUTTON)
-			icon.SetPixelSize(64)
-		} else {
-			icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_BUTTON)
-			icon.SetPixelSize(64)
-		}
-	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	if idk, ok := n.Hints["image-data"]; ok {
+	if _, ok := n.Hints["image-data"]; ok {
 		width := n.Hints["image-data"].Value().([]interface{})[0].(int32)
 		height := n.Hints["image-data"].Value().([]interface{})[1].(int32)
 		rowStride := n.Hints["image-data"].Value().([]interface{})[2].(int32)
 		hasAlpha := n.Hints["image-data"].Value().([]interface{})[3].(bool)
 		bitsPerSample := n.Hints["image-data"].Value().([]interface{})[4].(int32)
-		// channels := n.Hints["image-data"].Value().([]interface{})[5].(int32)
 
 		img := n.Hints["image-data"].Value().([]interface{})[6].([]byte)
-		// load image with pixbuf
 		pixbuf, err := gdk.PixbufNewFromData(img, gdk.COLORSPACE_RGB, hasAlpha, int(bitsPerSample), int(width), int(height), int(rowStride))
+		icon, err = gtk.ImageNewFromPixbuf(pixbuf)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		icon, err = gtk.ImageNewFromPixbuf(pixbuf)
+	} else if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
+		icon, err = gtk.ImageNewFromFile(customImagePath)
+	} else if n.AppIcon != "" {
+		icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
 	} else {
-		fmt.Print(idk)
+		icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
 	}
-
-	summaryLabel, err := gtk.LabelNew(n.Summary)
-	if err != nil {
-		return nil, err
-	}
-	summaryLabel.SetHAlign(gtk.ALIGN_START)
-	summaryLabel.SetLineWrap(true)
-	summaryLabel.SetMaxWidthChars(1)
-	summaryLabel.SetSizeRequest(WINDOW_WIDTH-200, -1)
-	summaryLabel.SetXAlign(0)
-
-	stylectx, err := summaryLabel.GetStyleContext()
-	if err != nil {
-		return nil, err
-	}
-	stylectx.AddClass("notification-summary")
-	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	bodyLabel, err := gtk.LabelNew(n.Body)
-	if err != nil {
-		return nil, err
-	}
-	bodyLabel.SetLineWrap(true)
-	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(WINDOW_WIDTH-200, -1)
-	bodyLabel.SetHAlign(gtk.ALIGN_START)
-	bodyLabel.SetXAlign(0)
-	stylectx, err = bodyLabel.GetStyleContext()
-	if err != nil {
-		return nil, err
-	}
-	stylectx.AddClass("notification-body")
-	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	if icon != nil {
 		resize(icon)
 		hbox.PackStart(icon, false, false, 0)
 	}
+
+	summaryLabel, err := gtk.LabelNew(n.Summary)
+	stylectx, err := summaryLabel.GetStyleContext()
+	stylectx.AddClass("notification-summary")
+	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+	summaryLabel.SetHAlign(gtk.ALIGN_START)
+	summaryLabel.SetLineWrap(true)
+	summaryLabel.SetMaxWidthChars(1)
+	summaryLabel.SetSizeRequest(elementWidth, -1)
+	summaryLabel.SetXAlign(0)
+
+	bodyLabel, err := gtk.LabelNew(n.Body)
+	stylectx, err = bodyLabel.GetStyleContext()
+	stylectx.AddClass("notification-body")
+	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	bodyLabel.SetLineWrap(true)
+	bodyLabel.SetMaxWidthChars(1)
+	bodyLabel.SetSizeRequest(elementWidth, -1)
+	bodyLabel.SetHAlign(gtk.ALIGN_START)
+	bodyLabel.SetXAlign(0)
+
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
-
 	hbox.PackStart(vbox, true, true, 0)
 
 	widget.container = hbox
-	return widget, nil
-}
 
-func (app *ActionCenterUI) ShowNotifications() error {
+	row, err := gtk.ListBoxRowNew()
+	row.Add(widget.container)
 
-	app.clearNotification()
-	notifications, err := app.actionCenterHandler.GetNotifications()
-	if err != nil {
-		return err
-	}
-	fmt.Println(notifications)
-	n := Model.NewNotification("chrom", 0, "chrom", "test", "very test", nil, nil, 0)
-	app.AddNotification(n)
-	// for _, notification := range notifications {
-	// 	//err := app.AddNotification(notification.AppIcon, notification.Summary, notification.Body)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	app.notifications.listBox.ShowAll()
-
-	// }
-	return nil
+	app.notifications.listBox.Insert(row, 0)
+	return err
 }
 
 func (app *ActionCenterUI) clearNotification() {
@@ -201,17 +134,12 @@ func (app *ActionCenterUI) clearNotification() {
 }
 
 func resize(icon *gtk.Image) {
-	const (
-		newWidth  = 64
-		newHeight = 64
-	)
-
-	// Get the current pixbuf from the image
 	pixbuf := icon.GetPixbuf()
-
-	// Scale the pixbuf to the new size
-	scaledPixbuf, _ := pixbuf.ScaleSimple(newWidth, newHeight, gdk.INTERP_BILINEAR)
-
-	// Update the image with the scaled pixbuf
+	if pixbuf == nil {
+		theme, _ := gtk.IconThemeGetDefault()
+		iconName, _ := icon.GetIconName()
+		pixbuf, _ = theme.LoadIconForScale(iconName, ICON_SIZE, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
+	}
+	scaledPixbuf, _ := pixbuf.ScaleSimple(ICON_SIZE, ICON_SIZE, gdk.INTERP_BILINEAR)
 	icon.SetFromPixbuf(scaledPixbuf)
 }
