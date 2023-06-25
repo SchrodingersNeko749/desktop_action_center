@@ -91,10 +91,9 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 		return nil, err
 	}
 	// notification icon
-	var icon *gtk.Image
+	var icon *gtk.Image = nil
 	if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
 		icon, err = gtk.ImageNewFromFile(customImagePath)
-		resize(icon)
 	} else {
 		if n.AppIcon == "" {
 			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_BUTTON)
@@ -109,7 +108,7 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 		return nil, err
 	}
 
-	if _, ok := n.Hints["image-data"]; ok {
+	if idk, ok := n.Hints["image-data"]; ok {
 		width := n.Hints["image-data"].Value().([]interface{})[0].(int32)
 		height := n.Hints["image-data"].Value().([]interface{})[1].(int32)
 		rowStride := n.Hints["image-data"].Value().([]interface{})[2].(int32)
@@ -125,6 +124,8 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 		}
 
 		icon, err = gtk.ImageNewFromPixbuf(pixbuf)
+	} else {
+		fmt.Print(idk)
 	}
 
 	summaryLabel, err := gtk.LabelNew(n.Summary)
@@ -159,7 +160,10 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 	stylectx.AddClass("notification-body")
 	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	hbox.PackStart(icon, false, false, 0)
+	if icon != nil {
+		resize(icon)
+		hbox.PackStart(icon, false, false, 0)
+	}
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
 
