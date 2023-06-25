@@ -1,0 +1,76 @@
+window {
+}
+
+* {
+    border-style: none;
+}
+
+#clock{
+    color: rgb(250, 113, 113);
+    background-color: transparent;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 3rem;
+    padding: 20px;
+}
+.tab{
+    color : #d9d9d9;
+    font-size: 2rem;
+    margin: 5px;
+
+}
+.tab-viewer > header {
+    background-color: transparent;
+}
+
+.tab-viewer > .header > .button:active {
+    color: #fff;
+    padding: 2rem;
+}
+
+/* CSS style for the notebook container */
+
+.tab-viewer tab{
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';
+}
+.tab-viewer tab:hover{
+    padding: 2rem;
+    color: white;
+    font-size: 2rem;
+    font-family: 'Font Awesome 6 Free Solid';
+    background-color: rgb(255, 143, 143);
+}
+.tab-viewer stack{
+    background-color: transparent;
+    padding: 1rem;
+}
+.tab-viewer > header.top > tabs > tab:checked {
+    background-image: none;
+    background-color: rgb(250, 113, 113);
+}
+.tab-viewer > header{
+    padding :1rem;
+}
+.notification-container{
+    background-color: transparent;
+}
+.notification-container row.activatable{
+    background-color: rgb(255, 143, 143);
+}
+.notification-summary{
+    color:white;
+    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 2rem;
+}
+
+.notification-body{
+    color:white;
+    font-size: 1.25rem;
+    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+GtkMenuItem:hover {
+    background-color: rgb(255, 143, 143);
+}

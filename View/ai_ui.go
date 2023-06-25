@@ -18,8 +18,6 @@ func (app *ActionCenterUI) Create() (*gtk.Box, error) {
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 
-	container.SetCanFocus(true)
-	scrollBox.SetCanFocus(true)
 	scrollBox.SetVExpand(true)
 	scrollBox.SetHExpand(true)
 
@@ -56,8 +54,6 @@ func (app *ActionCenterUI) Create() (*gtk.Box, error) {
 	container.Add(scrollBox)
 
 	inputBox, err := gtk.EntryNew()
-	inputBox.SetEditable(true)
-	inputBox.SetCanFocus(true)
 	container.Add(inputBox)
 
 	return container, nil

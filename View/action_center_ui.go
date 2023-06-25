@@ -5,15 +5,16 @@ import (
 	"time"
 
 	"github.com/actionCenter/Command"
+	"github.com/actionCenter/Data"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const WINDOW_WIDTH = 670
-const ICON_SIZE = 64
-const HORIZONTAL_SPACING = 24
-const VERTICAL_SPACING = 32
-const CSS_THEME_FILE = "neko.css"
+var WINDOW_WIDTH = 550
+var ICON_SIZE = 64
+var HORIZONTAL_SPACING = 24
+var VERTICAL_SPACING = 32
+var CSS_THEME_FILE = "trbl.css"
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
@@ -21,44 +22,82 @@ type ActionCenterUI struct {
 	container              *gtk.Box
 	actionCenterHandler    Command.ActionCenterInterface
 	notifications          NotificationList
+	cfg                    *Data.Config
+}
+
+func (app *ActionCenterUI) initWindow() error {
+	WINDOW_WIDTH = app.cfg.WINDOW_WIDTH
+	ICON_SIZE = app.cfg.ICON_SIZE
+	HORIZONTAL_SPACING = app.cfg.HORIZONTAL_SPACING
+	VERTICAL_SPACING = app.cfg.VERTICAL_SPACING
+	CSS_THEME_FILE = app.cfg.CSS_THEME_FILE
+
+	screen, _ := gdk.ScreenGetDefault()
+	visual, _ := screen.GetRGBAVisual()
+	display, _ := screen.GetDisplay()
+	monitor, _ := display.GetPrimaryMonitor()
+	width := monitor.GetGeometry().GetWidth()
+	height := monitor.GetGeometry().GetHeight()
+
+	gtk.Init(nil)
+	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
+	app.win.SetTitle("action-center-panel")
+	app.win.SetDefaultSize(WINDOW_WIDTH, height-32)
+	app.win.Move(width-WINDOW_WIDTH, 32)
+	app.win.SetResizable(false)
+	app.win.SetVisual(visual)
+
+	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
+		win.Move(width-WINDOW_WIDTH, 32)
+	})
+	app.win.Connect("destroy", func() {
+		gtk.MainQuit()
+	})
+
+	provider, _ := gtk.CssProviderNew()
+	err := provider.LoadFromPath(app.cfg.PATH + CSS_THEME_FILE)
+
+	if err != nil {
+		fmt.Println("Error loading" + app.cfg.PATH + CSS_THEME_FILE)
+		return err
+	}
+
+	app.componentStyleProvider = provider
+	style, err := app.win.GetStyleContext()
+	style.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+
+	return err
 }
 
 func (app *ActionCenterUI) ToggleVisiblity() {
 	app.win.SetVisible(!app.win.GetVisible())
 }
 
-func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename string) error {
-	// Initialize the window
+func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
+	cfg, ws := Data.LoadConfig()
+	app.cfg = &cfg
+
 	if err := app.initWindow(); err != nil {
 		return err
 	}
-	// make the actioncenter handler
 	app.actionCenterHandler = ac
 
-	ws, err := GetWidgetsFromConfig("View/test.json")
+	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return err
 	}
-	c, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	if err != nil {
-		return err
-	}
-	app.container = c
-	// Add Containers
+	app.container = container
 	for _, widget := range ws {
 		widgetContainer, err := app.createComponent(widget)
-		widgetContainer.SetCanFocus(true)
 		if err != nil {
 			return err
 		}
 		app.container.Add(widgetContainer)
 	}
 	app.win.Add(app.container)
-	app.win.SetAcceptFocus(true)
-	app.win.SetCanFocus(true)
 	return nil
 }
-func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
+func (app *ActionCenterUI) createComponent(widget Data.WidgetConfig) (*gtk.Box, error) {
 	var component *gtk.Box
 	var notebook *gtk.Notebook // for tabviewer
 	var err error
@@ -81,7 +120,6 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 		}
 	case "ai":
 		if component, err = app.Create(); err != nil {
-			component.SetCanFocus(true)
 			return nil, err
 		}
 	case "notification":
@@ -144,56 +182,6 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	vbox.SetHAlign(gtk.ALIGN_START)
 	vbox.Add(clockLabel)
 	return vbox, nil
-}
-
-func (app *ActionCenterUI) initWindow() error {
-	gtk.Init(nil)
-	screen, err := gdk.ScreenGetDefault()
-	if err != nil {
-		return err
-	}
-	display, _ := screen.GetDisplay()
-	monitor, _ := display.GetPrimaryMonitor()
-	geometry := monitor.GetGeometry()
-	width := geometry.GetWidth()
-	height := geometry.GetHeight()
-
-	app.win, err = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	if err != nil {
-		return err
-	}
-
-	app.win.SetTitle("action-center-panel")
-	app.win.SetDefaultSize(WINDOW_WIDTH, height-32)
-	app.win.Move(width-WINDOW_WIDTH, 32)
-	app.win.SetResizable(false)
-	visual, _ := screen.GetRGBAVisual()
-	app.win.SetVisual(visual)
-
-	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
-		win.Move(width-WINDOW_WIDTH, 32)
-	})
-	app.win.Connect("destroy", func() {
-		gtk.MainQuit()
-	})
-
-	provider, _ := gtk.CssProviderNew()
-	err = provider.LoadFromPath("assets/" + CSS_THEME_FILE)
-
-	if err != nil {
-		fmt.Println("Error loading assets/" + CSS_THEME_FILE)
-		return err
-	}
-
-	app.componentStyleProvider = provider
-	style, err := app.win.GetStyleContext()
-
-	if err != nil {
-		return err
-	}
-	style.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-
-	return nil
 }
 
 func (app *ActionCenterUI) Run() {

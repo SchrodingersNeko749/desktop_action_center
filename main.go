@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-
 	actionCenter := Service.NewActionCenter()
 
 	if err := actionCenter.Init(); err != nil {
