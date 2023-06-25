@@ -44,11 +44,11 @@ func (app *ActionCenterUI) newNotificationWidget(n Model.Notification) (*Notific
 		resize(icon, 64, 64)
 	} else {
 		if n.AppIcon == "" {
-			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
+			icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_BUTTON)
 			icon.SetPixelSize(64)
 
 		} else {
-			icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
+			icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_BUTTON)
 			icon.SetPixelSize(64)
 
 		}

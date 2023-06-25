@@ -9,7 +9,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const WINDOW_WIDTH = 575
+const WINDOW_WIDTH = 680
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
