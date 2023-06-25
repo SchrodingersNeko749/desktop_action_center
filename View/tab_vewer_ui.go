@@ -29,6 +29,7 @@ func (app *ActionCenterUI) createTabViewerContainer(configWidget Widget) (*gtk.B
 	box.Add(notebook)
 	return box, notebook, nil
 }
+
 func (app *ActionCenterUI) addTab(notebook *gtk.Notebook, tabLabelString string, page *gtk.Box) {
 	tabLabel, _ := gtk.LabelNew(tabLabelString)
 	tabLabel.SetSizeRequest(50, 50)

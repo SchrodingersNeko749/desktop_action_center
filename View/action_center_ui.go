@@ -10,6 +10,9 @@ import (
 )
 
 const WINDOW_WIDTH = 575
+const ICON_SIZE = 64
+const HORIZONTAL_SPACING = 24
+const VERTICAL_SPACING = 32
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
@@ -109,19 +112,18 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 	return component, nil
 }
 func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
-
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return nil, err
 	}
-	l, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
-	l.SetName("clock")
+	clockLabel, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
+	clockLabel.SetName("clock")
 	if err != nil {
 		return nil, err
 	}
 
 	// Apply the CSS provider to the label widget's style context
-	lStyle, err := l.GetStyleContext()
+	lStyle, err := clockLabel.GetStyleContext()
 	if err != nil {
 		return nil, err
 	}
@@ -134,11 +136,10 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	}
 	vboxStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
-	// Add the box container to the window
-
-	vbox.Add(l)
+	vbox.Add(clockLabel)
 	return vbox, nil
 }
+
 func (app *ActionCenterUI) initWindow() error {
 	gtk.Init(nil)
 	screen, err := gdk.ScreenGetDefault()
@@ -165,11 +166,17 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
 
-	// Initialize all Css containers
-	app.initCssStyles()
+	provider, err := gtk.CssProviderNew()
+	err = provider.LoadFromPath("assets/window.css")
 
-	// Apply the CSS provider to the window style context
+	if err != nil {
+		fmt.Println("Error loading assets/window.css")
+		return err
+	}
+
+	app.componentStyleProvider = provider
 	style, err := app.win.GetStyleContext()
+
 	if err != nil {
 		return err
 	}
@@ -177,23 +184,12 @@ func (app *ActionCenterUI) initWindow() error {
 
 	return nil
 }
-func (app *ActionCenterUI) initCssStyles() error {
-	// Create a new CSS provider and load the CSS file
-	provider, err := gtk.CssProviderNew()
-	if err != nil {
-		return err
-	}
 
-	if err := provider.LoadFromPath("assets/window.css"); err != nil {
-		return err
-	}
-	app.componentStyleProvider = provider
-	return nil
-}
 func (app *ActionCenterUI) Run() {
 	app.win.SetPosition(gtk.WIN_POS_NONE)
-	app.win.ShowAll()
+	app.ShowAll()
 }
+
 func (app *ActionCenterUI) ShowAll() {
 	app.win.ShowAll()
 }
