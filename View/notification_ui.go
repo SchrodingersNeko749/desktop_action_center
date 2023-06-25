@@ -75,7 +75,7 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
 	row.Add(widget.container)
 
 	app.notifications.listBox.Add(row)
-
+	app.notifications.container.ShowAll()
 	return nil
 }
 
