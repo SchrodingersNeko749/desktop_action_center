@@ -46,12 +46,15 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface, filename s
 	// Add Containers
 	for _, widget := range ws {
 		widgetContainer, err := app.createComponent(widget)
+		widgetContainer.SetCanFocus(true)
 		if err != nil {
 			return err
 		}
 		app.container.Add(widgetContainer)
 	}
 	app.win.Add(app.container)
+	app.win.SetAcceptFocus(true)
+	app.win.SetCanFocus(true)
 	return nil
 }
 func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
@@ -76,7 +79,8 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 			return nil, err
 		}
 	case "ai":
-		if component, err = app.createAiComponent(); err != nil {
+		if component, err = app.Create(); err != nil {
+			component.SetCanFocus(true)
 			return nil, err
 		}
 	case "notification":
@@ -96,6 +100,7 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 	for _, child := range widget.Children {
 		if widget.Type == "tab-viewer" {
 			childComponent, err := app.createComponent(*child)
+			childComponent.SetCanFocus(true)
 			if err != nil {
 				return nil, err
 			}
@@ -160,11 +165,16 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(WINDOW_WIDTH, height-32)
 	app.win.Move(width-WINDOW_WIDTH, 32)
-	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetResizable(false)
 	visual, _ := screen.GetRGBAVisual()
 	app.win.SetVisual(visual)
-	app.win.SetDecorated(false)
+
+	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
+		win.Move(width-WINDOW_WIDTH, 32)
+	})
+	app.win.Connect("destroy", func() {
+		gtk.MainQuit()
+	})
 
 	provider, err := gtk.CssProviderNew()
 	err = provider.LoadFromPath("assets/window.css")
