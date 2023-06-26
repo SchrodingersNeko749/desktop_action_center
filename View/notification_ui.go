@@ -20,69 +20,67 @@ type NotificationList struct {
 
 func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
-	style, _ := container.GetStyleContext()
-	style.AddClass("notification-container")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
 	scrollBox.SetHExpand(false)
-	style, _ = scrollBox.GetStyleContext()
-	style.AddClass("notification-scrollbox")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	scrollBox.SetVExpand(true)
 	scrollBox.SetHExpand(false)
 
 	header, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
-	style, _ = header.GetStyleContext()
-	style.AddClass("notification-container-header")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	label, _ := gtk.LabelNew("Notifications")
+	clearBtn, _ := gtk.ButtonNewWithLabel("Clear All")
 
-	label, err := gtk.LabelNew("Notifications")
-	if err != nil {
-		return nil, err
-	}
-	clearBtn, err := gtk.ButtonNewWithLabel("Clear All")
-	if err != nil {
-		return nil, err
-	}
-	clearBtn.Connect("clicked", func() {
-		app.clearNotification()
-	})
 	header.PackStart(label, false, false, 0)
 	header.PackEnd(clearBtn, false, true, 1)
-	container.Add(header)
 
 	listBox, _ := gtk.ListBoxNew()
 	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
-	listBox.Connect("row-selected", func() {
-		selected := listBox.GetSelectedRow()
-		if selected != nil {
-			listBox.Remove(selected)
-		}
-	})
-	style, _ = scrollBox.GetStyleContext()
-	style.AddClass("notification-scrollbox")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	nlist := NotificationList{
 		container: scrollBox,
 		listBox:   listBox,
 	}
 	app.notifications = nlist
+
+	container.Add(header)
 	scrollBox.Add(listBox)
 	container.Add(scrollBox)
+
+	clearBtn.Connect("clicked", func() {
+		app.clearNotification()
+	})
+
+	listBox.Connect("row-selected", func() {
+		selected := listBox.GetSelectedRow()
+		if selected != nil {
+			listBox.Remove(selected)
+		}
+	})
+
+	style, _ := container.GetStyleContext()
+	style.AddClass("notification-container")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = scrollBox.GetStyleContext()
+	style.AddClass("notification-scrollbox")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = header.GetStyleContext()
+	style.AddClass("notification-container-header")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = scrollBox.GetStyleContext()
+	style.AddClass("notification-scrollbox")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
 	return container, nil
 }
 
-func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
-	widget := NotificationWidget{}
-	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
-	style, _ := hbox.GetStyleContext()
-	style.AddClass("notification-widget")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-
-	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
+func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 	elementWidth := app.notifications.listBox.GetAllocatedWidth() - ICON_SIZE - HORIZONTAL_SPACING
 
+	widget := NotificationWidget{}
+	row, _ := gtk.ListBoxRowNew()
+	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
+	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
+	summaryLabel, _ := gtk.LabelNew(n.Summary)
+	bodyLabel, _ := gtk.LabelNew(n.Body)
 	var icon *gtk.Image = nil
 
 	if _, ok := n.Hints["image-data"]; ok {
@@ -99,21 +97,16 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
 			fmt.Println(err)
 		}
 	} else if customImagePath, ok := n.Hints["image-path"].Value().(string); ok {
-		icon, err = gtk.ImageNewFromFile(customImagePath)
+		icon, _ = gtk.ImageNewFromFile(customImagePath)
 	} else if n.AppIcon != "" {
-		icon, err = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
+		icon, _ = gtk.ImageNewFromIconName(n.AppIcon, gtk.ICON_SIZE_LARGE_TOOLBAR)
 	} else {
-		icon, err = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
+		icon, _ = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
 	}
-
 	if icon != nil {
 		resize(icon)
 		hbox.PackStart(icon, false, false, 0)
 	}
-	summaryLabel, err := gtk.LabelNew(n.Summary)
-	stylectx, err := summaryLabel.GetStyleContext()
-	stylectx.AddClass("notification-summary")
-	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
 	summaryLabel.SetLineWrap(true)
@@ -121,28 +114,28 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) error {
 	summaryLabel.SetSizeRequest(elementWidth, -1)
 	summaryLabel.SetXAlign(0)
 
-	bodyLabel, err := gtk.LabelNew(n.Body)
-	stylectx, err = bodyLabel.GetStyleContext()
-	stylectx.AddClass("notification-body")
-	stylectx.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetMaxWidthChars(1)
 	bodyLabel.SetSizeRequest(elementWidth, -1)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetXAlign(0)
 
+	widget.container = hbox
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
 	hbox.PackStart(vbox, true, true, 0)
-
-	widget.container = hbox
-
-	row, err := gtk.ListBoxRowNew()
-
 	row.Add(widget.container)
-
 	app.notifications.listBox.Insert(row, 0)
-	return err
+
+	style, _ := hbox.GetStyleContext()
+	style.AddClass("notification-widget")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = summaryLabel.GetStyleContext()
+	style.AddClass("notification-summary")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = bodyLabel.GetStyleContext()
+	style.AddClass("notification-body")
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 }
 
 func (app *ActionCenterUI) clearNotification() {
