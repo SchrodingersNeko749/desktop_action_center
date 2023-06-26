@@ -182,11 +182,11 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	vbox.PackStart(clockLabel, true, true, 0)
 	return vbox, nil
 }
-func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetConfig) (*gtk.Box, error) {
+func (app *ActionCenterUI) createBrightnessComponent(configWidget *Data.WidgetConfig) (*gtk.Box, error) {
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
 	style, _ := hbox.GetStyleContext()
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style.AddClass("notification-container-header")
 
 	brightnessBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
@@ -196,7 +196,7 @@ func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetCon
 	output, _ := cmd.Output()
 	brightnessBar.SetValue(float64(output[0]))
 	style, _ = brightnessBar.GetStyleContext()
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	brightnessBar.Connect("value-changed", func() {
 		v := brightnessBar.GetValue()
