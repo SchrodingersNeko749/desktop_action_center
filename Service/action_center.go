@@ -42,10 +42,7 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 	return ns, nil
 }
 func (app *ActionCenter) AddNotification(n Model.Notification) error {
-	err := app.actionCenterUI.AddNotification(n)
-	if err != nil {
-		return err
-	}
+	app.actionCenterUI.AddNotification(n)
 	app.actionCenterUI.ShowAll()
 	return nil
 }

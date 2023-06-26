@@ -3,6 +3,7 @@ package View
 import (
 	"fmt"
 
+	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
@@ -58,16 +59,16 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 
 	style, _ := container.GetStyleContext()
 	style.AddClass("notification-container")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = scrollBox.GetStyleContext()
 	style.AddClass("notification-scrollbox")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = header.GetStyleContext()
 	style.AddClass("notification-container-header")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = scrollBox.GetStyleContext()
 	style.AddClass("notification-scrollbox")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	return container, nil
 }
@@ -129,13 +130,15 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 
 	style, _ := hbox.GetStyleContext()
 	style.AddClass("notification-widget")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = summaryLabel.GetStyleContext()
 	style.AddClass("notification-summary")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = bodyLabel.GetStyleContext()
 	style.AddClass("notification-body")
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+	app.win.ShowAll()
 }
 
 func (app *ActionCenterUI) clearNotification() {

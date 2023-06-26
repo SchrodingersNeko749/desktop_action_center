@@ -1,6 +1,7 @@
 package View
 
 import (
+	"github.com/actionCenter/Data"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -56,16 +57,16 @@ func (ai *ActionCenterUI) Create() (*gtk.Box, error) {
 
 	style, _ := container.GetStyleContext()
 	style.AddClass("ai-container")
-	style.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = scrollBox.GetStyleContext()
 	style.AddClass("ai-scrollbox")
-	style.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = header.GetStyleContext()
 	style.AddClass("ai-container-header")
-	style.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = inputBox.GetStyleContext()
 	style.AddClass("ai-inputbox")
-	style.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	nlist := NotificationList{
 		container: scrollBox,
@@ -108,13 +109,13 @@ func (ai *ActionCenterUI) AddMessage(msg string) {
 
 	style, _ := hbox.GetStyleContext()
 	style.AddClass("notification-widget")
-	style.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	stylectx, _ := summaryLabel.GetStyleContext()
-	stylectx.AddClass("notification-summary")
-	stylectx.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	stylectx.AddClass("ai-summary")
+	stylectx.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	stylectx, _ = bodyLabel.GetStyleContext()
-	stylectx.AddClass("notification-body")
-	stylectx.AddProvider(ai.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	stylectx.AddClass("ai-body")
+	stylectx.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	ai.ShowAll()
 }
