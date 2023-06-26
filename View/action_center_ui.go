@@ -2,6 +2,7 @@ package View
 
 import (
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/actionCenter/Command"
@@ -15,7 +16,7 @@ var WINDOW_WIDTH = 550
 var ICON_SIZE = 64
 var HORIZONTAL_SPACING = 24
 var VERTICAL_SPACING = 32
-var CSS_THEME_FILE = "trbl.css"
+var CSS_THEME_FILE = "neko.css"
 
 type ActionCenterUI struct {
 	win                    *gtk.Window
@@ -47,6 +48,7 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.Move(width-WINDOW_WIDTH, 32)
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
+	app.win.SetDecorated(false)
 
 	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
 		win.Move(width-WINDOW_WIDTH, 32)
@@ -105,6 +107,11 @@ func (app *ActionCenterUI) createComponent(widget Data.WidgetConfig) (*gtk.Box, 
 	switch widget.Type {
 	case "header":
 		if component, err = app.createHeaderComponent(); err != nil {
+			return nil, err
+		}
+	case "brightness":
+		fmt.Println("test")
+		if component, err = app.createBrightnessComponent(widget); err != nil {
 			return nil, err
 		}
 	case "tab-viewer":
@@ -174,24 +181,51 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 		return nil, err
 	}
 
-	// Apply the CSS provider to the label widget's style context
 	lStyle, err := clockLabel.GetStyleContext()
 	if err != nil {
 		return nil, err
 	}
 	lStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
-	// Apply the CSS provider to the box container's style context
 	vboxStyle, err := vbox.GetStyleContext()
 	if err != nil {
 		return nil, err
 	}
 	vboxStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
-	vbox.Add(clockLabel)
+	vbox.PackStart(clockLabel, true, true, 0)
 	return vbox, nil
 }
+func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetConfig) (*gtk.Box, error) {
+	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	hbox.SetHAlign(gtk.ALIGN_CENTER)
+	style, _ := hbox.GetStyleContext()
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddClass("notification-container-header")
 
+	brightnessBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
+	brightnessBar.SetHExpand(true)
+	brightnessBar.SetSizeRequest(500, -1)
+	cmd := exec.Command("./getbrightness.sh")
+	output, _ := cmd.Output()
+	brightnessBar.SetValue(float64(output[0]))
+	style, _ = brightnessBar.GetStyleContext()
+	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+	brightnessBar.Connect("value-changed", func() {
+		v := brightnessBar.GetValue()
+		cmd := exec.Command("./setbrightness.sh", fmt.Sprintf("%d", int(v)))
+		output, err := cmd.Output()
+		fmt.Println(string(output), err)
+	})
+
+	label, _ := gtk.LabelNew(configWidget.Properties.Label)
+
+	hbox.PackStart(brightnessBar, true, true, 0)
+	hbox.PackEnd(label, true, true, 0)
+
+	return hbox, err
+}
 func (app *ActionCenterUI) Run() {
 	app.win.SetPosition(gtk.WIN_POS_NONE)
 	app.ShowAll()

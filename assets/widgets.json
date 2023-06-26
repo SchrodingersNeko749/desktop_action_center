@@ -2,6 +2,7 @@
     {
         "type": "header"
     },
+
     {
         "type": "tab-viewer",
         "children":[
@@ -36,5 +37,11 @@
                 }
             }
         ]
+    },
+    {
+        "type": "brightness",
+        "properties":{
+            "label":""
+        }
     }
 ]

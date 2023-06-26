@@ -7,6 +7,7 @@ import (
 
 func (app *ActionCenterUI) createTabViewerContainer(configWidget Data.WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	box.SetSizeRequest(WINDOW_WIDTH, -1)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -16,7 +17,8 @@ func (app *ActionCenterUI) createTabViewerContainer(configWidget Data.WidgetConf
 		return nil, nil, err
 	}
 
-	notebook.SetHExpand(false)
+	notebook.SetHExpand(true)
+
 	notebook.SetHAlign(gtk.ALIGN_CENTER)
 
 	stylectx, err := notebook.GetStyleContext()
