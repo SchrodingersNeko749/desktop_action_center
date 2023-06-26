@@ -43,7 +43,6 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 }
 func (app *ActionCenter) AddNotification(n Model.Notification) error {
 	app.actionCenterUI.AddNotification(n)
-
 	app.actionCenterUI.ShowAll()
 	return nil
 }

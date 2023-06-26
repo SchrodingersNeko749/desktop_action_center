@@ -5,7 +5,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-func (app *ActionCenterUI) createTabViewerContainer(configWidget Data.WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
+func (app *ActionCenterUI) createTabViewerContainer(configWidget *Data.WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	box.SetSizeRequest(WINDOW_WIDTH, -1)
 	if err != nil {
@@ -26,7 +26,7 @@ func (app *ActionCenterUI) createTabViewerContainer(configWidget Data.WidgetConf
 		return nil, nil, err
 	}
 	stylectx.AddClass("tab-viewer")
-	stylectx.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	stylectx.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	notebook.SetCurrentPage(0)
 
 	box.Add(notebook)

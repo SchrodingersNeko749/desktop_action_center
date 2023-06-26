@@ -5,7 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os/user"
+
+	"github.com/gotk3/gotk3/gtk"
 )
+
+var Conf *Config
+var WidgetConfs []WidgetConfig
+var StyleProvider *gtk.CssProvider
 
 type Config struct {
 	PATH               string
@@ -29,14 +35,14 @@ type WidgetProperties struct {
 	Label       string `json:"label"`
 }
 
-func LoadConfig() (Config, []WidgetConfig) {
+func LoadConfig() {
 	user, _ := user.Current()
 	path := "/home/" + user.Username + "/.config/actionCenter/"
 	configPath := path + "config.json"
 	widgetsPath := path + "widgets.json"
 
-	cfg, cer := ioutil.ReadFile(configPath)
-	wcfg, wer := ioutil.ReadFile(widgetsPath)
+	cfgFile, cer := ioutil.ReadFile(configPath)
+	wcfgFile, wer := ioutil.ReadFile(widgetsPath)
 
 	if cer != nil {
 		fmt.Println("Error reading config file:", cer)
@@ -48,8 +54,8 @@ func LoadConfig() (Config, []WidgetConfig) {
 	var config Config
 	var widgets []WidgetConfig
 
-	cer = json.Unmarshal(cfg, &config)
-	wer = json.Unmarshal(wcfg, &widgets)
+	cer = json.Unmarshal(cfgFile, &config)
+	wer = json.Unmarshal(wcfgFile, &widgets)
 
 	if cer != nil {
 		fmt.Println("Error parsing config file:", cer)
@@ -59,6 +65,21 @@ func LoadConfig() (Config, []WidgetConfig) {
 	}
 
 	config.PATH = path
+	Conf = &config
+	WidgetConfs = widgets
 
-	return config, widgets
+	provider, err := gtk.CssProviderNew()
+	if err != nil {
+		fmt.Println("Error creating css provider: ", err)
+		panic(err)
+	}
+
+	err = provider.LoadFromPath(Conf.PATH + Conf.CSS_THEME_FILE)
+
+	if err != nil {
+		fmt.Println("Error loading "+Conf.PATH+Conf.CSS_THEME_FILE+": ", err)
+		panic(err)
+	}
+
+	StyleProvider = provider
 }

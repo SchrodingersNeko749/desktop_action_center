@@ -19,21 +19,19 @@ var VERTICAL_SPACING = 32
 var CSS_THEME_FILE = "neko.css"
 
 type ActionCenterUI struct {
-	win                    *gtk.Window
-	componentStyleProvider *gtk.CssProvider
-	container              *gtk.Box
-	actionCenterHandler    Command.ActionCenterInterface
-	notifications          NotificationList
-	aimessages             NotificationList
-	cfg                    *Data.Config
+	win                 *gtk.Window
+	container           *gtk.Box
+	actionCenterHandler Command.ActionCenterInterface
+	notifications       NotificationList
+	aimessages          NotificationList
 }
 
 func (app *ActionCenterUI) initWindow() error {
-	WINDOW_WIDTH = app.cfg.WINDOW_WIDTH
-	ICON_SIZE = app.cfg.ICON_SIZE
-	HORIZONTAL_SPACING = app.cfg.HORIZONTAL_SPACING
-	VERTICAL_SPACING = app.cfg.VERTICAL_SPACING
-	CSS_THEME_FILE = app.cfg.CSS_THEME_FILE
+	WINDOW_WIDTH = Data.Conf.WINDOW_WIDTH
+	ICON_SIZE = Data.Conf.ICON_SIZE
+	HORIZONTAL_SPACING = Data.Conf.HORIZONTAL_SPACING
+	VERTICAL_SPACING = Data.Conf.VERTICAL_SPACING
+	CSS_THEME_FILE = Data.Conf.CSS_THEME_FILE
 
 	screen, _ := gdk.ScreenGetDefault()
 	visual, _ := screen.GetRGBAVisual()
@@ -57,17 +55,8 @@ func (app *ActionCenterUI) initWindow() error {
 		gtk.MainQuit()
 	})
 
-	provider, _ := gtk.CssProviderNew()
-	err := provider.LoadFromPath(app.cfg.PATH + CSS_THEME_FILE)
-
-	if err != nil {
-		fmt.Println("Error loading" + app.cfg.PATH + CSS_THEME_FILE)
-		return err
-	}
-
-	app.componentStyleProvider = provider
 	style, err := app.win.GetStyleContext()
-	style.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	style.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	return err
 }
@@ -77,9 +66,6 @@ func (app *ActionCenterUI) ToggleVisiblity() {
 }
 
 func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
-	cfg, ws := Data.LoadConfig()
-	app.cfg = &cfg
-
 	if err := app.initWindow(); err != nil {
 		return err
 	}
@@ -90,8 +76,8 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 		return err
 	}
 	app.container = container
-	for _, widget := range ws {
-		widgetContainer, err := app.createComponent(widget)
+	for _, widget := range Data.WidgetConfs {
+		widgetContainer, err := app.createComponent(&widget)
 		if err != nil {
 			return err
 		}
@@ -100,7 +86,7 @@ func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {
 	app.win.Add(app.container)
 	return nil
 }
-func (app *ActionCenterUI) createComponent(widget Data.WidgetConfig) (*gtk.Box, error) {
+func (app *ActionCenterUI) createComponent(widget *Data.WidgetConfig) (*gtk.Box, error) {
 	var component *gtk.Box
 	var notebook *gtk.Notebook // for tabviewer
 	var err error
@@ -146,14 +132,14 @@ func (app *ActionCenterUI) createComponent(widget Data.WidgetConfig) (*gtk.Box, 
 	// Recursively call the method for the children of the widget
 	for _, child := range widget.Children {
 		if widget.Type == "tab-viewer" {
-			childComponent, err := app.createComponent(*child)
+			childComponent, err := app.createComponent(child)
 			childComponent.SetCanFocus(true)
 			if err != nil {
 				return nil, err
 			}
 			app.addTab(notebook, child.Properties.Label, childComponent)
 		} else {
-			childContainer, err := app.createComponent(*child)
+			childContainer, err := app.createComponent(child)
 			if err != nil {
 				return nil, err
 			}
@@ -185,22 +171,22 @@ func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	if err != nil {
 		return nil, err
 	}
-	lStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	lStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	vboxStyle, err := vbox.GetStyleContext()
 	if err != nil {
 		return nil, err
 	}
-	vboxStyle.AddProvider(app.componentStyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	vboxStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vbox.SetHAlign(gtk.ALIGN_START)
 	vbox.PackStart(clockLabel, true, true, 0)
 	return vbox, nil
 }
-func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetConfig) (*gtk.Box, error) {
+func (app *ActionCenterUI) createBrightnessComponent(configWidget *Data.WidgetConfig) (*gtk.Box, error) {
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
 	style, _ := hbox.GetStyleContext()
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style.AddClass("notification-container-header")
 
 	brightnessBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
@@ -210,7 +196,7 @@ func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetCon
 	output, _ := cmd.Output()
 	brightnessBar.SetValue(float64(output[0]))
 	style, _ = brightnessBar.GetStyleContext()
-	style.AddProvider(app.componentStyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	brightnessBar.Connect("value-changed", func() {
 		v := brightnessBar.GetValue()
@@ -227,7 +213,6 @@ func (app *ActionCenterUI) createBrightnessComponent(configWidget Data.WidgetCon
 	return hbox, err
 }
 func (app *ActionCenterUI) Run() {
-	app.win.SetPosition(gtk.WIN_POS_NONE)
 	app.ShowAll()
 }
 
