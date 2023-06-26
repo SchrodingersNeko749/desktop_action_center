@@ -6,10 +6,11 @@ import (
 
 	"github.com/actionCenter/Command"
 	"github.com/gotk3/gotk3/gdk"
+	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const WINDOW_WIDTH = 670
+const WINDOW_WIDTH = 675
 const ICON_SIZE = 64
 const HORIZONTAL_SPACING = 24
 const VERTICAL_SPACING = 32
@@ -112,12 +113,19 @@ func (app *ActionCenterUI) createComponent(widget Widget) (*gtk.Box, error) {
 
 	return component, nil
 }
+
 func (app *ActionCenterUI) createHeaderComponent() (*gtk.Box, error) {
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return nil, err
 	}
-	clockLabel, err := gtk.LabelNew(time.Now().Format("Mon 3:04 PM"))
+	clockLabel, err := gtk.LabelNew("")
+	go func() {
+		glib.TimeoutAdd(uint(1000), func() bool {
+			clockLabel.SetText(time.Now().Format("Mon 3:04 PM"))
+			return true
+		})
+	}()
 	clockLabel.SetName("clock")
 	if err != nil {
 		return nil, err
@@ -160,6 +168,7 @@ func (app *ActionCenterUI) initWindow() error {
 
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(WINDOW_WIDTH, height-32)
+	fmt.Printf("width-575: %d width-675: %d\n", width-575, width-675)
 	app.win.Move(width-WINDOW_WIDTH, 32)
 	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetResizable(false)
