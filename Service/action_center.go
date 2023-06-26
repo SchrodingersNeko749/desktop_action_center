@@ -13,7 +13,7 @@ import (
 )
 
 type ActionCenter struct {
-	notificationCenter *NotificationServer
+	notificationServer *NotificationServer
 	actionCenterUI     *View.ActionCenterUI
 }
 
@@ -22,11 +22,11 @@ func NewActionCenter() *ActionCenter {
 }
 
 func (app *ActionCenter) Init() error {
-	app.notificationCenter = NewNotificationServer()
-	go app.notificationCenter.Init(app)
+	app.notificationServer = NewNotificationServer()
+	go app.notificationServer.Init(app)
 
 	app.actionCenterUI = &View.ActionCenterUI{}
-	if err := app.actionCenterUI.CreateUI(app, "test.json"); err != nil {
+	if err := app.actionCenterUI.CreateUI(app); err != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func (app *ActionCenter) Init() error {
 
 func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 
-	ns, err := app.notificationCenter.GetNotifications()
+	ns, err := app.notificationServer.GetNotifications()
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (app *ActionCenter) Run() {
 				app.actionCenterUI.ToggleVisiblity()
 			case syscall.SIGTERM:
 				fmt.Println("Closing dbus conn")
-				app.notificationCenter.conn.Close()
+				app.notificationServer.conn.Close()
 				os.Exit(0)
 			}
 		}

@@ -4,10 +4,11 @@ import (
 	"log"
 
 	"github.com/actionCenter/Service"
+	"github.com/gotk3/gotk3/gtk"
 )
 
 func main() {
-
+	gtk.Init(nil)
 	actionCenter := Service.NewActionCenter()
 
 	if err := actionCenter.Init(); err != nil {

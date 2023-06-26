@@ -1,10 +1,11 @@
 package View
 
 import (
+	"github.com/actionCenter/Data"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-func (app *ActionCenterUI) createTabViewerContainer(configWidget Widget) (*gtk.Box, *gtk.Notebook, error) {
+func (app *ActionCenterUI) createTabViewerContainer(configWidget Data.WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return nil, nil, err
