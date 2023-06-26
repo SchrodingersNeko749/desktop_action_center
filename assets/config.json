@@ -1,7 +1,7 @@
 {
-	"window_width": 550,
+	"window_width": 650,
 	"horizontal_spacing": 16,
 	"vertical_spacing": 24,
 	"icon_size": 64,
-	"css_theme_file": "trbl.css"
+	"css_theme_file": "neko.css"
 }

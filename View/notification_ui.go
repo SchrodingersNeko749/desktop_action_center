@@ -29,7 +29,6 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	header, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	label, _ := gtk.LabelNew("Notifications")
 	clearBtn, _ := gtk.ButtonNewWithLabel("Clear All")
-
 	header.PackStart(label, false, false, 0)
 	header.PackEnd(clearBtn, false, true, 1)
 
@@ -68,6 +67,9 @@ func (app *ActionCenterUI) createNotificationComponent() (*gtk.Box, error) {
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = scrollBox.GetStyleContext()
 	style.AddClass("notification-scrollbox")
+	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = clearBtn.GetStyleContext()
+	style.AddClass("clear-button")
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	return container, nil
