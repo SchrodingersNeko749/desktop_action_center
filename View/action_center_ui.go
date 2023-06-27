@@ -48,10 +48,6 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
-	handlerID := app.win.Connect("map", func() {
-		fmt.Println("map")
-	})
-	app.win.HandlerDisconnect(handlerID)
 
 	app.win.Connect("destroy", func() {
 		gtk.MainQuit()
@@ -65,6 +61,9 @@ func (app *ActionCenterUI) initWindow() error {
 
 func (app *ActionCenterUI) ToggleVisiblity() {
 	app.win.SetVisible(!app.win.GetVisible())
+	if app.win.GetVisible() {
+		app.win.ShowAll()
+	}
 }
 
 func (app *ActionCenterUI) CreateUI(ac Command.ActionCenterInterface) error {

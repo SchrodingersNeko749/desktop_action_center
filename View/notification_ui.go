@@ -145,7 +145,9 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 	style.AddClass("notification-body")
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	widget.container.Show()
+	if app.win.GetVisible() {
+		app.win.ShowAll()
+	}
 }
 
 func (app *ActionCenterUI) clearNotification() {
