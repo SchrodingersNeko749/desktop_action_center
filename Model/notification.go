@@ -81,7 +81,7 @@ func (n *Notification) RemoveHyperLinkFromBody() {
 	n.Body = strings.Join(filteredLines, "\n")
 }
 
-func CreateNotificationComponent(n Notification) *gtk.ListBoxRow {
+func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 	row, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
@@ -122,6 +122,7 @@ func CreateNotificationComponent(n Notification) *gtk.ListBoxRow {
 	summaryLabel.SetMaxWidthChars(1)
 	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
+	bodyLabel.SetName("body")
 	bodyLabel.SetXAlign(0)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetHExpand(true)
@@ -150,7 +151,7 @@ func CreateNotificationComponent(n Notification) *gtk.ListBoxRow {
 	style.AddClass("notification-body")
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	return row
+	return row, bodyLabel
 }
 
 func resize(icon *gtk.Image) {
