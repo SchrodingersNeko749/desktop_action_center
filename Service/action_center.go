@@ -6,14 +6,12 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
 	"github.com/actionCenter/View"
 
 	"github.com/gotk3/gotk3/gdk"
-	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -21,15 +19,20 @@ type ActionCenter struct {
 	win                *gtk.Window
 	container          *gtk.Box
 	notificationServer *NotificationServer
-	NotificationTab    *View.NotificationTab
-	WifiTab            *View.WifiTab
-	ScreenTab          *View.ScreenTab
-	RadioTab           *View.RadioTab
-	AITab              *View.AITab
+
+	HeaderUI        *View.HeaderUI
+	NotificationTab *View.NotificationTab
+	WifiTab         *View.WifiTab
+	ScreenTab       *View.ScreenTab
+	RadioTab        *View.RadioTab
+	AITab           *View.AITab
 }
 
 func NewActionCenter() *ActionCenter {
 	return &ActionCenter{
+		notificationServer: &NotificationServer{},
+
+		HeaderUI:        &View.HeaderUI{},
 		NotificationTab: &View.NotificationTab{},
 		WifiTab:         &View.WifiTab{},
 		ScreenTab:       &View.ScreenTab{},
@@ -39,31 +42,8 @@ func NewActionCenter() *ActionCenter {
 }
 
 func (app *ActionCenter) Init() {
-	app.notificationServer = NewNotificationServer()
-	go app.notificationServer.Init(app)
-	if err := app.initWindow(); err != nil {
-		return
-	}
-
-	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	if err != nil {
-		return
-	}
-	app.container = container
-	for _, widget := range Data.WidgetConfs {
-		widgetContainer, err := app.createComponent(&widget)
-		if err != nil {
-			return
-		}
-		app.container.Add(widgetContainer)
-	}
-	app.win.Add(app.container)
-	app.win.ShowAll()
-
-	// handling signals
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGTERM)
-
 	go func() {
 		fmt.Println("Monitoring signals")
 		for {
@@ -79,25 +59,15 @@ func (app *ActionCenter) Init() {
 			}
 		}
 	}()
+
+	go app.notificationServer.Init(app)
+
+	app.initWindow()
+	app.win.ShowAll()
 	gtk.Main()
 }
 
-func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
-
-	ns, err := app.notificationServer.GetNotifications()
-	if err != nil {
-		return nil, err
-	}
-	return ns, nil
-}
-func (app *ActionCenter) AddNotification(n Model.Notification) error {
-	widget := Model.CreateNotificationComponent(n)
-	app.NotificationTab.AddNotification(widget)
-	app.win.ShowAll()
-	return nil
-}
-
-func (app *ActionCenter) initWindow() error {
+func (app *ActionCenter) initWindow() {
 	screen, _ := gdk.ScreenGetDefault()
 	visual, _ := screen.GetRGBAVisual()
 	display, _ := screen.GetDisplay()
@@ -114,6 +84,13 @@ func (app *ActionCenter) initWindow() error {
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
 
+	app.container, _ = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	for _, widget := range Data.WidgetConfs {
+		widgetContainer, _ := app.createComponent(&widget)
+		app.container.Add(widgetContainer)
+	}
+	app.win.Add(app.container)
+
 	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
 		win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
 	})
@@ -121,57 +98,38 @@ func (app *ActionCenter) initWindow() error {
 		gtk.MainQuit()
 	})
 
-	style, err := app.win.GetStyleContext()
+	style, _ := app.win.GetStyleContext()
 	style.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-
-	return err
-}
-
-func (app *ActionCenter) ToggleVisiblity() {
-	app.win.SetVisible(!app.win.GetVisible())
 }
 
 func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, error) {
 	var component *gtk.Box
 	var notebook *gtk.Notebook // for tabviewer
 	var err error
+
 	switch widget.Type {
 	case "header":
-		if component, err = app.createHeaderComponent(); err != nil {
-			return nil, err
-		}
+		component, err = app.HeaderUI.Create()
 	case "brightness":
-		fmt.Println("test")
-		if component, err = app.createBrightnessComponent(widget); err != nil {
-			return nil, err
-		}
+		component, err = app.createBrightnessComponent(widget)
 	case "tab-viewer":
-		if component, notebook, err = app.createTabViewerContainer(widget); err != nil {
-			return nil, err
-		}
+		component, notebook, err = app.createTabViewerContainer(widget)
 	case "wifi":
-		if component, err = app.WifiTab.Create(); err != nil {
-			return nil, err
-		}
+		component, err = app.WifiTab.Create()
 	case "radio":
-		if component, err = app.RadioTab.Create(); err != nil {
-			return nil, err
-		}
+		component, err = app.RadioTab.Create()
 	case "ai":
-		if component, err = app.AITab.Create(); err != nil {
-			return nil, err
-		}
+		component, err = app.AITab.Create()
 	case "notification":
-		if component, err = app.NotificationTab.Create(); err != nil {
-			return nil, err
-		}
+		component, err = app.NotificationTab.Create()
 	case "capture":
-		if component, err = app.ScreenTab.Create(); err != nil {
-			return nil, err
-		}
+		component, err = app.ScreenTab.Create()
 	default:
-		// Handle unrecognized widget types
 		return nil, fmt.Errorf("unrecognized widget type: %s", widget.Type)
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	// Recursively call the method for the children of the widget
@@ -182,7 +140,9 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 			if err != nil {
 				return nil, err
 			}
-			app.addTab(notebook, child.Properties.Label, childComponent)
+			tabLabel, _ := gtk.LabelNew(child.Properties.Label)
+			tabLabel.SetSizeRequest(50, 50)
+			notebook.AppendPage(childComponent, tabLabel)
 		} else {
 			childContainer, err := app.createComponent(child)
 			if err != nil {
@@ -195,38 +155,6 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 	return component, nil
 }
 
-func (app *ActionCenter) createHeaderComponent() (*gtk.Box, error) {
-	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	if err != nil {
-		return nil, err
-	}
-	clockLabel, err := gtk.LabelNew("")
-	go func() {
-		glib.TimeoutAdd(uint(1000), func() bool {
-			clockLabel.SetText(time.Now().Format("Mon 3:04 PM"))
-			return true
-		})
-	}()
-	clockLabel.SetName("clock")
-	if err != nil {
-		return nil, err
-	}
-
-	lStyle, err := clockLabel.GetStyleContext()
-	if err != nil {
-		return nil, err
-	}
-	lStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-
-	vboxStyle, err := vbox.GetStyleContext()
-	if err != nil {
-		return nil, err
-	}
-	vboxStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-	vbox.SetHAlign(gtk.ALIGN_START)
-	vbox.PackStart(clockLabel, true, true, 0)
-	return vbox, nil
-}
 func (app *ActionCenter) createBrightnessComponent(configWidget *Data.WidgetConfig) (*gtk.Box, error) {
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
@@ -264,20 +192,16 @@ func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfi
 	if err != nil {
 		return nil, nil, err
 	}
-	//box.SetSizeRequest(WINDOW_WIDTH, -1)
+
 	notebook, err := gtk.NotebookNew()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	notebook.SetHExpand(true)
-
 	notebook.SetHAlign(gtk.ALIGN_CENTER)
 
-	stylectx, err := notebook.GetStyleContext()
-	if err != nil {
-		return nil, nil, err
-	}
+	stylectx, _ := notebook.GetStyleContext()
 	stylectx.AddClass("tab-viewer")
 	stylectx.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	notebook.SetCurrentPage(0)
@@ -286,8 +210,16 @@ func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfi
 	return box, notebook, nil
 }
 
-func (app *ActionCenter) addTab(notebook *gtk.Notebook, tabLabelString string, page *gtk.Box) {
-	tabLabel, _ := gtk.LabelNew(tabLabelString)
-	tabLabel.SetSizeRequest(50, 50)
-	notebook.AppendPage(page, tabLabel)
+func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
+	return app.notificationServer.GetNotifications()
+}
+
+func (app *ActionCenter) AddNotification(n Model.Notification) {
+	notifictation := Model.CreateNotificationComponent(n)
+	app.NotificationTab.AddNotification(notifictation)
+	app.win.ShowAll()
+}
+
+func (app *ActionCenter) ToggleVisiblity() {
+	app.win.SetVisible(!app.win.GetVisible())
 }

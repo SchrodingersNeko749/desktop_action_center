@@ -16,9 +16,6 @@ type NotificationServer struct {
 	actionCenterHandler Command.ActionCenterInterface
 }
 
-func NewNotificationServer() *NotificationServer {
-	return &NotificationServer{}
-}
 func (n *NotificationServer) Init(ac Command.ActionCenterInterface) error {
 	// Connect to the session bus
 	conn, err := dbus.ConnectSessionBus()
