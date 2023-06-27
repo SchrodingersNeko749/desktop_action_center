@@ -1,16 +1,15 @@
 package View
 
 import (
+	"os/user"
+	"strings"
+
 	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type AiWidget struct {
-	container *gtk.Box
-	id        int
-}
 type AITab struct {
 	container *gtk.Box
 	listBox   *gtk.ListBox
@@ -75,40 +74,33 @@ func (ai *AITab) Create() (*gtk.Box, error) {
 }
 
 func (ai *AITab) AddMessage(msg string) {
-	elementWidth := ai.listBox.GetAllocatedWidth() - Data.Conf.ICON_SIZE - Data.Conf.HORIZONTAL_SPACING
-	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
-	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
-	row, _ := gtk.ListBoxRowNew()
-	summaryLabel, _ := gtk.LabelNew(msg)
-	bodyLabel, _ := gtk.LabelNew(msg)
+	username, _ := user.Current()
+	widget, _ := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0))
 
-	summaryLabel.SetHAlign(gtk.ALIGN_START)
-	summaryLabel.SetLineWrap(true)
-	summaryLabel.SetMaxWidthChars(1)
-	summaryLabel.SetSizeRequest(elementWidth, -1)
-	summaryLabel.SetXAlign(0)
+	glib.IdleAdd(func() {
+		ai.listBox.Add(widget)
+		ai.listBox.ShowAll()
+	})
 
-	bodyLabel.SetLineWrap(true)
-	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(elementWidth, -1)
-	bodyLabel.SetHAlign(gtk.ALIGN_START)
-	bodyLabel.SetXAlign(0)
+	prompt := Model.GeneratePrompt("chat", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
 
-	row.Add(hbox)
-	vbox.PackStart(summaryLabel, false, false, 0)
-	vbox.PackStart(bodyLabel, false, false, 0)
-	hbox.PackStart(vbox, true, true, 0)
-	ai.listBox.Insert(row, 0)
+	go ai.GetResponse(prompt)
 
-	style, _ := hbox.GetStyleContext()
-	style.AddClass("notification-widget")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	stylectx, _ := summaryLabel.GetStyleContext()
-	stylectx.AddClass("ai-summary")
-	stylectx.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	stylectx, _ = bodyLabel.GetStyleContext()
-	stylectx.AddClass("ai-body")
-	stylectx.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+}
 
-	ai.listBox.ShowAll()
+func (ai *AITab) GetResponse(prompt Model.Prompt) {
+	response := Model.RunInference(prompt)
+	responseWidget, body := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
+	glib.IdleAdd(func() {
+		ai.listBox.Add(responseWidget)
+		ai.listBox.ShowAll()
+	})
+	builder := strings.Builder{}
+	for str := range response {
+		builder.WriteString(str)
+		glib.IdleAdd(func() {
+			body.SetText(builder.String())
+		})
+	}
+
 }
