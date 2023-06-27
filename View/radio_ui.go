@@ -2,7 +2,12 @@ package View
 
 import "github.com/gotk3/gotk3/gtk"
 
-func (app *ActionCenterUI) createRadioComponent() (*gtk.Box, error) {
+type RadioTab struct {
+	container *gtk.Box
+	listbox   *gtk.ListBox
+}
+
+func (app *RadioTab) Create() (*gtk.Box, error) {
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return nil, err
