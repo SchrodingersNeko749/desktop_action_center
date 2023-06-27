@@ -82,7 +82,7 @@ func (ai *AITab) AddMessage(msg string) {
 		ai.listBox.ShowAll()
 	})
 
-	prompt := Model.GeneratePrompt("chat", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
+	prompt := Model.GeneratePrompt("instruction", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
 
 	go ai.GetResponse(prompt)
 

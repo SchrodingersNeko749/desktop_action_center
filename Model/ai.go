@@ -44,12 +44,16 @@ func RunInference(p Prompt) <-chan string {
 		reader := bufio.NewReader(resp.Body)
 
 		for {
-			b, err := reader.ReadByte()
-			if err != nil {
-				close(out)
-				return
+			buffer := make([]byte, 2)
+			for i := 0; i < 2; i++ {
+				b, err := reader.ReadByte()
+				if err != nil {
+					close(out)
+					return
+				}
+				buffer[i] = b
 			}
-			out <- string(b)
+			out <- string(buffer)
 		}
 	}()
 	return out
@@ -82,7 +86,7 @@ func GeneratePrompt(mode string, input string, maxToken int, model string, inclI
 		IgnoreEos:            false,
 		TopK:                 20,
 		TopP:                 0.9,
-		Temperature:          0.1,
+		Temperature:          0.2,
 		Mirostat:             2,
 		Entropy:              3,
 		LearningRate:         0.003,
@@ -90,7 +94,7 @@ func GeneratePrompt(mode string, input string, maxToken int, model string, inclI
 		TypicalP:             1,
 		PenalizeNewLines:     false,
 		PenalizeSpaces:       false,
-		RepetitionPenalty:    1.3,
+		RepetitionPenalty:    1.15,
 		IncludeIngest:        inclIngest,
 		IncludeStatistics:    inclStats,
 		OneShot:              true,
