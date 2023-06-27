@@ -219,7 +219,9 @@ func (app *ActionCenter) AddNotification(n Model.Notification) {
 	app.NotificationTab.AddNotification(notifictation)
 	pageNum := app.TabControl.PageNum(app.NotificationTab.Container)
 	app.TabControl.SetCurrentPage(pageNum)
-	app.win.ShowAll()
+	if app.win.GetVisible() {
+		app.win.ShowAll()
+	}
 }
 
 func (app *ActionCenter) ToggleVisiblity() {
