@@ -3,27 +3,26 @@ package Service
 import (
 	"fmt"
 
-	"github.com/actionCenter/Command"
 	"github.com/actionCenter/Model"
 	"github.com/godbus/dbus/v5"
 	"github.com/gotk3/gotk3/glib"
 )
 
 type NotificationServer struct {
-	Notifications       []Model.Notification
-	conn                *dbus.Conn
-	obj                 dbus.BusObject
-	actionCenterHandler Command.ActionCenterInterface
+	Notifications []Model.Notification
+	conn          *dbus.Conn
+	obj           dbus.BusObject
+	ActionCenter  *ActionCenter
 }
 
-func (n *NotificationServer) Init(ac Command.ActionCenterInterface) error {
+func (n *NotificationServer) Init(ac *ActionCenter) error {
+	n.ActionCenter = ac
 	// Connect to the session bus
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		return err
 	}
 	n.conn = conn
-	n.actionCenterHandler = ac
 
 	server := n
 	conn.Export(server, "/org/freedesktop/Notifications", "org.freedesktop.Notifications")
@@ -47,7 +46,7 @@ func (n *NotificationServer) Notify(appName string, replacesID uint32, appIcon s
 	notification := Model.NewNotification(appName, replacesID, appIcon, summary, body, actions, hints, expireTimeout)
 	//notification.RemoveHyperLinkFromBody()
 	glib.IdleAdd(func() {
-		n.actionCenterHandler.AddNotification(notification)
+		n.ActionCenter.AddNotification(notification)
 	})
 	return 0, nil
 }

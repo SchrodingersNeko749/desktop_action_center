@@ -1,8 +1,7 @@
-package View
+package AI
 
 import (
 	"os/user"
-	"strings"
 
 	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
@@ -10,13 +9,15 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type AITab struct {
+type UI struct {
 	container *gtk.Box
 	listBox   *gtk.ListBox
 	Messages  []Model.NotificationWidget
+	Service   *Service
 }
 
-func (ai *AITab) Create() (*gtk.Box, error) {
+func (ai *UI) Create() (*gtk.Box, error) {
+	ai.Service = &Service{}
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
 	scrollBox.SetHExpand(true)
@@ -73,34 +74,17 @@ func (ai *AITab) Create() (*gtk.Box, error) {
 	return container, nil
 }
 
-func (ai *AITab) AddMessage(msg string) {
+func (ai *UI) AddMessage(msg string) {
 	username, _ := user.Current()
 	widget, _ := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0))
+	responseWidget, body := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
 
 	glib.IdleAdd(func() {
 		ai.listBox.Add(widget)
-		ai.listBox.ShowAll()
-	})
-
-	prompt := Model.GeneratePrompt("instruction", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
-
-	go ai.GetResponse(prompt)
-
-}
-
-func (ai *AITab) GetResponse(prompt Model.Prompt) {
-	response := Model.RunInference(prompt)
-	responseWidget, body := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
-	glib.IdleAdd(func() {
 		ai.listBox.Add(responseWidget)
 		ai.listBox.ShowAll()
 	})
-	builder := strings.Builder{}
-	for str := range response {
-		builder.WriteString(str)
-		glib.IdleAdd(func() {
-			body.SetText(builder.String())
-		})
-	}
 
+	prompt := ai.Service.GeneratePrompt("instruction", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
+	go ai.Service.RunInference(prompt, body)
 }

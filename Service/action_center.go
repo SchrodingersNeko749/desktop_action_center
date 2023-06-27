@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/actionCenter/AI"
 	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
 	"github.com/actionCenter/View"
@@ -25,20 +26,20 @@ type ActionCenter struct {
 	WifiTab         *View.WifiTab
 	ScreenTab       *View.ScreenTab
 	RadioTab        *View.RadioTab
-	AITab           *View.AITab
+	AI_Tab          *AI.UI
 }
 
 func NewActionCenter() *ActionCenter {
-	return &ActionCenter{
+	ac := &ActionCenter{
 		notificationServer: &NotificationServer{},
-
-		HeaderUI:        &View.HeaderUI{},
-		NotificationTab: &View.NotificationTab{},
-		WifiTab:         &View.WifiTab{},
-		ScreenTab:       &View.ScreenTab{},
-		RadioTab:        &View.RadioTab{},
-		AITab:           &View.AITab{},
+		HeaderUI:           &View.HeaderUI{},
+		NotificationTab:    &View.NotificationTab{},
+		WifiTab:            &View.WifiTab{},
+		ScreenTab:          &View.ScreenTab{},
+		RadioTab:           &View.RadioTab{},
+		AI_Tab:             &AI.UI{},
 	}
+	return ac
 }
 
 func (app *ActionCenter) Init() {
@@ -122,7 +123,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 	case "radio":
 		component, err = app.RadioTab.Create()
 	case "ai":
-		component, err = app.AITab.Create()
+		component, err = app.AI_Tab.Create()
 	case "notification":
 		component, err = app.NotificationTab.Create(*app.win)
 	case "capture":
