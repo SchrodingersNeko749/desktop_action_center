@@ -48,7 +48,7 @@ func (n *NotificationServer) GetNotifications() ([]Model.Notification, error) {
 
 func (n *NotificationServer) Notify(appName string, replacesID uint32, appIcon string, summary string, body string, actions []string, hints map[string]dbus.Variant, expireTimeout int32) (uint32, *dbus.Error) {
 	notification := Model.NewNotification(appName, replacesID, appIcon, summary, body, actions, hints, expireTimeout)
-	notification.RemoveHyperLinkFromBody()
+	//notification.RemoveHyperLinkFromBody()
 	glib.IdleAdd(func() {
 		n.actionCenterHandler.AddNotification(notification)
 	})

@@ -41,6 +41,7 @@ func (app *ActionCenterUI) initWindow() error {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
+	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(WINDOW_WIDTH, height-32)
 	app.win.Move(width-WINDOW_WIDTH, 32)
