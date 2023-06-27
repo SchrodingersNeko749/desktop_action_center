@@ -2,6 +2,7 @@ package View
 
 import (
 	"github.com/actionCenter/Data"
+	"github.com/actionCenter/Model"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -10,14 +11,13 @@ type AiWidget struct {
 	container *gtk.Box
 	id        int
 }
-type AiChatList struct {
-	container *gtk.ScrolledWindow
+type AITab struct {
+	container *gtk.Box
 	listBox   *gtk.ListBox
-	Messages  []NotificationWidget
-	app       *ActionCenterUI
+	Messages  []Model.NotificationWidget
 }
 
-func (ai *ActionCenterUI) Create() (*gtk.Box, error) {
+func (ai *AITab) Create() (*gtk.Box, error) {
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
 	scrollBox.SetHExpand(true)
@@ -32,6 +32,9 @@ func (ai *ActionCenterUI) Create() (*gtk.Box, error) {
 	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
 	header.PackStart(label, false, false, 0)
 	header.PackEnd(clearBtn, false, true, 1)
+
+	ai.container = container
+	ai.listBox = listBox
 
 	container.Add(header)
 	scrollBox.Add(listBox)
@@ -68,20 +71,11 @@ func (ai *ActionCenterUI) Create() (*gtk.Box, error) {
 	style.AddClass("ai-inputbox")
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	nlist := NotificationList{
-		container: scrollBox,
-		listBox:   listBox,
-	}
-
-	ai.aimessages = nlist
-
 	return container, nil
 }
 
-func (ai *ActionCenterUI) AddMessage(msg string) {
-	elementWidth := ai.notifications.listBox.GetAllocatedWidth() - ICON_SIZE - HORIZONTAL_SPACING
-
-	widget := NotificationWidget{}
+func (ai *AITab) AddMessage(msg string) {
+	elementWidth := ai.listBox.GetAllocatedWidth() - Data.Conf.ICON_SIZE - Data.Conf.HORIZONTAL_SPACING
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
 	row, _ := gtk.ListBoxRowNew()
@@ -100,12 +94,11 @@ func (ai *ActionCenterUI) AddMessage(msg string) {
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetXAlign(0)
 
-	widget.container = hbox
-	row.Add(widget.container)
+	row.Add(hbox)
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
 	hbox.PackStart(vbox, true, true, 0)
-	ai.aimessages.listBox.Insert(row, 0)
+	ai.listBox.Insert(row, 0)
 
 	style, _ := hbox.GetStyleContext()
 	style.AddClass("notification-widget")
@@ -117,5 +110,5 @@ func (ai *ActionCenterUI) AddMessage(msg string) {
 	stylectx.AddClass("ai-body")
 	stylectx.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	ai.ShowAll()
+	ai.listBox.ShowAll()
 }
