@@ -21,6 +21,7 @@ type ActionCenter struct {
 	container          *gtk.Box
 	notificationServer *NotificationServer
 
+	TabControl      *gtk.Notebook
 	HeaderUI        *View.HeaderUI
 	NotificationTab *View.NotificationTab
 	WifiTab         *View.WifiTab
@@ -108,7 +109,6 @@ func (app *ActionCenter) initWindow() {
 
 func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, error) {
 	var component *gtk.Box
-	var notebook *gtk.Notebook // for tabviewer
 	var err error
 
 	switch widget.Type {
@@ -117,7 +117,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 	case "brightness":
 		component, err = app.createBrightnessComponent(widget)
 	case "tab-viewer":
-		component, notebook, err = app.createTabViewerContainer(widget)
+		component, app.TabControl, err = app.createTabViewerContainer(widget)
 	case "wifi":
 		component, err = app.WifiTab.Create()
 	case "radio":
@@ -146,7 +146,8 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 			}
 			tabLabel, _ := gtk.LabelNew(child.Properties.Label)
 			tabLabel.SetSizeRequest(50, 50)
-			notebook.AppendPage(childComponent, tabLabel)
+			app.TabControl.AppendPage(childComponent, tabLabel)
+			app.TabControl.GetNPages()
 		} else {
 			childContainer, err := app.createComponent(child)
 			if err != nil {
@@ -198,17 +199,12 @@ func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfi
 	}
 
 	notebook, err := gtk.NotebookNew()
-	if err != nil {
-		return nil, nil, err
-	}
-
 	notebook.SetHExpand(true)
 	notebook.SetHAlign(gtk.ALIGN_CENTER)
 
 	stylectx, _ := notebook.GetStyleContext()
 	stylectx.AddClass("tab-viewer")
 	stylectx.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-	notebook.SetCurrentPage(0)
 
 	box.Add(notebook)
 	return box, notebook, nil
@@ -221,6 +217,8 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 func (app *ActionCenter) AddNotification(n Model.Notification) {
 	notifictation, _ := Model.CreateNotificationComponent(n)
 	app.NotificationTab.AddNotification(notifictation)
+	pageNum := app.TabControl.PageNum(app.NotificationTab.Container)
+	app.TabControl.SetCurrentPage(pageNum)
 	app.win.ShowAll()
 }
 

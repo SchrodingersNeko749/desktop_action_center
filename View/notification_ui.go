@@ -7,8 +7,8 @@ import (
 
 type NotificationTab struct {
 	win       *gtk.Window
-	container *gtk.Box
-	listBox   *gtk.ListBox
+	Container *gtk.Box
+	ListBox   *gtk.ListBox
 }
 
 func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
@@ -30,8 +30,8 @@ func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
 	listBox, _ := gtk.ListBoxNew()
 	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
 
-	app.container = container
-	app.listBox = listBox
+	app.Container = container
+	app.ListBox = listBox
 
 	container.Add(header)
 	container.Add(scrollBox)
@@ -68,12 +68,12 @@ func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
 }
 
 func (app *NotificationTab) AddNotification(widget *gtk.ListBoxRow) {
-	app.listBox.Insert(widget, 0)
-	app.container.ShowAll()
+	app.ListBox.Insert(widget, 0)
+	app.Container.ShowAll()
 }
 
 func (app *NotificationTab) clearNotification() {
-	for app.listBox.GetChildren().Length() > 0 {
-		app.listBox.Remove(app.listBox.GetRowAtIndex(0))
+	for app.ListBox.GetChildren().Length() > 0 {
+		app.ListBox.Remove(app.ListBox.GetRowAtIndex(0))
 	}
 }
