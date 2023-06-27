@@ -114,21 +114,23 @@ func CreateNotificationComponent(n Notification) *gtk.ListBoxRow {
 		hbox.PackStart(icon, false, false, 0)
 	}
 
+	summaryLabel.SetXAlign(0)
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
+	summaryLabel.SetHExpand(true)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
-	summaryLabel.SetJustify(gtk.JUSTIFY_FILL)
 	summaryLabel.SetMaxWidthChars(1)
-	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING, -1)
-	summaryLabel.SetXAlign(0)
+	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
+	bodyLabel.SetXAlign(0)
+	bodyLabel.SetHAlign(gtk.ALIGN_START)
+	bodyLabel.SetHExpand(true)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
-	bodyLabel.SetJustify(gtk.JUSTIFY_FILL)
 	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-10, -1)
-	bodyLabel.SetHAlign(gtk.ALIGN_START)
-	bodyLabel.SetXAlign(0)
+	bodyLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
+
+	hbox.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
