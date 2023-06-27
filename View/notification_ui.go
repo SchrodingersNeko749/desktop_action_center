@@ -6,16 +6,20 @@ import (
 )
 
 type NotificationTab struct {
+	win       *gtk.Window
 	container *gtk.Box
 	listBox   *gtk.ListBox
 }
 
-func (app *NotificationTab) Create() (*gtk.Box, error) {
+func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
+	app.win = &window
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
-	scrollBox.SetHExpand(false)
+	container.SetSizeRequest(app.win.GetAllocatedWidth(), app.win.GetAllocatedHeight())
+	container.SetVExpand(true)
+	container.SetHExpand(true)
+	scrollBox.SetHExpand(true)
 	scrollBox.SetVExpand(true)
-	scrollBox.SetHExpand(false)
 
 	header, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	label, _ := gtk.LabelNew("Notifications")

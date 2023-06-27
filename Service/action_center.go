@@ -83,7 +83,10 @@ func (app *ActionCenter) initWindow() {
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
-
+	handlerID := app.win.Connect("map", func() {
+		fmt.Println("map")
+	})
+	app.win.HandlerDisconnect(handlerID)
 	app.container, _ = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	for _, widget := range Data.WidgetConfs {
 		widgetContainer, _ := app.createComponent(&widget)
@@ -121,7 +124,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 	case "ai":
 		component, err = app.AITab.Create()
 	case "notification":
-		component, err = app.NotificationTab.Create()
+		component, err = app.NotificationTab.Create(*app.win)
 	case "capture":
 		component, err = app.ScreenTab.Create()
 	default:
@@ -222,4 +225,7 @@ func (app *ActionCenter) AddNotification(n Model.Notification) {
 
 func (app *ActionCenter) ToggleVisiblity() {
 	app.win.SetVisible(!app.win.GetVisible())
+	if app.win.GetVisible() {
+		app.win.ShowAll()
+	}
 }
