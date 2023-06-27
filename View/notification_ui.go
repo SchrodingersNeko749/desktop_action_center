@@ -81,6 +81,8 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 	widget := NotificationWidget{}
 	row, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
+	hbox.SetSizeRequest(elementWidth-ICON_SIZE, -1)
+
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
 	summaryLabel, _ := gtk.LabelNew(n.Summary)
 	bodyLabel, _ := gtk.LabelNew(n.Body)
@@ -114,16 +116,15 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
-	summaryLabel.SetJustify(gtk.JUSTIFY_FILL)
 	summaryLabel.SetMaxWidthChars(1)
 	summaryLabel.SetSizeRequest(elementWidth, -1)
 	summaryLabel.SetXAlign(0)
 
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
-	bodyLabel.SetJustify(gtk.JUSTIFY_FILL)
 	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(elementWidth-10, -1)
+	bodyLabel.SetSizeRequest(elementWidth, -1)
+	bodyLabel.SetHExpand(false)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetXAlign(0)
 
@@ -144,7 +145,7 @@ func (app *ActionCenterUI) AddNotification(n Model.Notification) {
 	style.AddClass("notification-body")
 	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-	widget.container.ShowAll()
+	widget.container.Show()
 }
 
 func (app *ActionCenterUI) clearNotification() {

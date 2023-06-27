@@ -48,10 +48,11 @@ func (app *ActionCenterUI) initWindow() error {
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
-
-	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
-		win.Move(width-WINDOW_WIDTH, 32)
+	handlerID := app.win.Connect("map", func() {
+		fmt.Println("map")
 	})
+	app.win.HandlerDisconnect(handlerID)
+
 	app.win.Connect("destroy", func() {
 		gtk.MainQuit()
 	})
