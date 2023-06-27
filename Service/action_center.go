@@ -220,7 +220,9 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 func (app *ActionCenter) AddNotification(n Model.Notification) {
 	notifictation := Model.CreateNotificationComponent(n)
 	app.NotificationTab.AddNotification(notifictation)
-	app.win.ShowAll()
+	if app.win.GetVisible() {
+		app.win.ShowAll()
+	}
 }
 
 func (app *ActionCenter) ToggleVisiblity() {

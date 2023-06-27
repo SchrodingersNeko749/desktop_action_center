@@ -114,16 +114,16 @@ func CreateNotificationComponent(n Notification) *gtk.ListBoxRow {
 		hbox.PackStart(icon, false, false, 0)
 	}
 
-	summaryLabel.SetXAlign(0)
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
+	summaryLabel.SetXAlign(0)
 	summaryLabel.SetHExpand(true)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
 	summaryLabel.SetMaxWidthChars(1)
 	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
-	bodyLabel.SetXAlign(0)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
+	bodyLabel.SetXAlign(0)
 	bodyLabel.SetHExpand(true)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
