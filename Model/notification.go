@@ -83,6 +83,7 @@ func (n *Notification) RemoveHyperLinkFromBody() {
 
 func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 	row, _ := gtk.ListBoxRowNew()
+	row.SetSizeRequest(Data.Conf.WINDOW_WIDTH, -1)
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
 	summaryLabel, _ := gtk.LabelNew(n.Summary)
@@ -114,22 +115,21 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 		hbox.PackStart(icon, false, false, 0)
 	}
 
-	summaryLabel.SetXAlign(0)
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
+	summaryLabel.SetXAlign(0)
 	summaryLabel.SetHExpand(true)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
 	summaryLabel.SetMaxWidthChars(1)
 	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
-	bodyLabel.SetName("body")
-	bodyLabel.SetXAlign(0)
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
+	bodyLabel.SetXAlign(0)
 	bodyLabel.SetHExpand(true)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
 	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
+	bodyLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE, -1)
 
 	hbox.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 

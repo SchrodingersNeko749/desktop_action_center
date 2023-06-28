@@ -69,7 +69,9 @@ func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
 
 func (app *NotificationTab) AddNotification(widget *gtk.ListBoxRow) {
 	app.ListBox.Insert(widget, 0)
-	app.Container.ShowAll()
+	if app.win.GetVisible() {
+		app.Container.ShowAll()
+	}
 }
 
 func (app *NotificationTab) clearNotification() {
