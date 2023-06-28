@@ -88,9 +88,11 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 		hbox.PackStart(icon, false, false, 0)
 	}
 
+	summaryLabel.SetHAlign(gtk.ALIGN_START)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
 
+	bodyLabel.SetHAlign(gtk.ALIGN_START)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
 

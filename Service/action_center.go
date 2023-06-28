@@ -21,8 +21,8 @@ type ActionCenter struct {
 	container          *gtk.Box
 	notificationServer *NotificationServer
 
+	Header          *View.Header
 	TabControl      *gtk.Notebook
-	HeaderUI        *View.HeaderUI
 	NotificationTab *View.NotificationTab
 	WifiTab         *View.WifiTab
 	ScreenTab       *View.ScreenTab
@@ -33,7 +33,7 @@ type ActionCenter struct {
 func NewActionCenter() *ActionCenter {
 	ac := &ActionCenter{
 		notificationServer: &NotificationServer{},
-		HeaderUI:           &View.HeaderUI{},
+		Header:             &View.Header{},
 		NotificationTab:    &View.NotificationTab{},
 		WifiTab:            &View.WifiTab{},
 		ScreenTab:          &View.ScreenTab{},
@@ -78,7 +78,7 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	// app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
+	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(Data.Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
@@ -109,7 +109,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 
 	switch widget.Type {
 	case "header":
-		component, err = app.HeaderUI.Create()
+		component = app.Header.Create()
 	case "brightness":
 		component, err = app.createBrightnessComponent(widget)
 	case "tab-viewer":
@@ -132,7 +132,6 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 		return nil, err
 	}
 
-	// Recursively call the method for the children of the widget
 	for _, child := range widget.Children {
 		if widget.Type == "tab-viewer" {
 			childComponent, err := app.createComponent(child)
@@ -141,7 +140,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 				return nil, err
 			}
 			tabLabel, _ := gtk.LabelNew(child.Properties.Label)
-			tabLabel.SetSizeRequest(50, 50)
+			tabLabel.SetSizeRequest(Data.Conf.ICON_SIZE, Data.Conf.ICON_SIZE)
 			app.TabControl.AppendPage(childComponent, tabLabel)
 			app.TabControl.GetNPages()
 		} else {
@@ -196,7 +195,7 @@ func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfi
 
 	notebook, err := gtk.NotebookNew()
 	notebook.SetHExpand(true)
-	notebook.SetHAlign(gtk.ALIGN_CENTER)
+	notebook.SetHAlign(gtk.ALIGN_FILL)
 
 	stylectx, _ := notebook.GetStyleContext()
 	stylectx.AddClass("tab-viewer")

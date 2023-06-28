@@ -1,4 +1,5 @@
 window {
+    color: white;
 }
 
 * {
@@ -13,7 +14,6 @@ window {
     padding: 20px;
 }
 .tab{
-    color : #d9d9d9;
     font-size: 2rem;
     margin: 5px;
 
@@ -23,7 +23,6 @@ window {
 }
 
 .tab-viewer > .header > .button:active {
-    color: #fff;
     padding: 2rem;
 }
 
