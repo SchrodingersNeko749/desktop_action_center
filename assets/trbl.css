@@ -2,13 +2,13 @@ window {
 }
 
 * {
+    font-family: 'Pro Font Windows', 'monospace';
     border-style: none;
 }
 
 #clock{
     color: rgb(250, 113, 113);
     background-color: transparent;
-    font-family: 'Pro Font Windows', 'monospace';
     font-size: 3rem;
     padding: 20px;
 }
@@ -26,8 +26,6 @@ window {
     color: #fff;
     padding: 2rem;
 }
-
-/* CSS style for the notebook container */
 
 .tab-viewer tab{
     padding: 2rem;
@@ -61,22 +59,20 @@ window {
 }
 .notification-summary{
     color:white;
-    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 2rem;
+}
+.notification-widget{
+    color:white;
     font-size: 2rem;
 }
 
 .notification-body{
     color:white;
     font-size: 1.25rem;
-    font-family: 'Gill Sans','Iranian Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-}
-
-GtkMenuItem:hover {
-    background-color: rgb(255, 143, 143);
 }
 
 .ai-container-header{
-    font-family: 'Pro Font Windows', 'monospace';
+    background-color: transparent;
 }
 .ai-container{
     background-color: transparent;
