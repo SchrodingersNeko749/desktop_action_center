@@ -76,17 +76,13 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
+	// app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(Data.Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
-	handlerID := app.win.Connect("map", func() {
-		fmt.Println("map")
-	})
-	app.win.HandlerDisconnect(handlerID)
 	app.container, _ = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	for _, widget := range Data.WidgetConfs {
 		widgetContainer, _ := app.createComponent(&widget)
@@ -218,7 +214,7 @@ func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
 }
 
 func (app *ActionCenter) AddNotification(n Model.Notification) {
-	notifictation := Model.CreateNotificationComponent(n)
+	notifictation, _ := Model.CreateNotificationComponent(n)
 	app.NotificationTab.AddNotification(notifictation)
 	if app.win.GetVisible() {
 		app.win.ShowAll()
