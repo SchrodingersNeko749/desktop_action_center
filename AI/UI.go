@@ -85,6 +85,6 @@ func (ai *UI) AddMessage(msg string) {
 		ai.listBox.ShowAll()
 	})
 
-	prompt := ai.Service.GeneratePrompt("instruction", msg, 1024, "guanaco-7B.ggmlv3.q4_0.bin", false, false)
+	prompt := ai.Service.GeneratePrompt("instruction", msg, 1024, "nous-hermes-13b.ggmlv3.q4_0.bin", false, false)
 	go ai.Service.RunInference(prompt, body)
 }

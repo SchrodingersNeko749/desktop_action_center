@@ -39,33 +39,7 @@ func NewNotification(appName string, replacesID uint32, appIcon string, summary 
 	}
 	return n
 }
-func NotificationFromVariant(variant map[string]dbus.Variant) Notification {
-	notification := Notification{}
 
-	if app, ok := variant["app_name"].Value().(string); ok {
-		notification.AppName = app
-	}
-	if id, ok := variant["id"].Value().(uint32); ok {
-		notification.Id = id
-	}
-	if icon, ok := variant["icon_data"].Value().(string); ok {
-		notification.AppIcon = icon
-	}
-	if summary, ok := variant["summary"].Value().(string); ok {
-		notification.Summary = summary
-	}
-	if body, ok := variant["body"].Value().(string); ok {
-		notification.Body = body
-	}
-	if hints, ok := variant["hints"].Value().(map[string]dbus.Variant); ok {
-		notification.Hints = hints
-	}
-	if expiration, ok := variant["expire_timeout"].Value().(int32); ok {
-		notification.ExpirationTimeOut = expiration
-	}
-
-	return notification
-}
 func (n *Notification) RemoveHyperLinkFromBody() {
 	re := regexp.MustCompile(`<a.*?>(.*?)</a>`)
 	n.Body = re.ReplaceAllString(n.Body, "")
@@ -83,7 +57,6 @@ func (n *Notification) RemoveHyperLinkFromBody() {
 
 func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 	row, _ := gtk.ListBoxRowNew()
-	row.SetSizeRequest(Data.Conf.WINDOW_WIDTH, -1)
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 20)
 	summaryLabel, _ := gtk.LabelNew(n.Summary)
@@ -116,29 +89,22 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 	}
 
 	summaryLabel.SetHAlign(gtk.ALIGN_START)
-	summaryLabel.SetXAlign(0)
-	summaryLabel.SetHExpand(true)
 	summaryLabel.SetLineWrap(true)
 	summaryLabel.SetSelectable(true)
-	summaryLabel.SetMaxWidthChars(1)
-	summaryLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
 	bodyLabel.SetHAlign(gtk.ALIGN_START)
-	bodyLabel.SetXAlign(0)
-	bodyLabel.SetHExpand(true)
 	bodyLabel.SetLineWrap(true)
 	bodyLabel.SetSelectable(true)
-	bodyLabel.SetMaxWidthChars(1)
-	bodyLabel.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE, -1)
-
-	hbox.SetSizeRequest(Data.Conf.WINDOW_WIDTH-Data.Conf.HORIZONTAL_SPACING-Data.Conf.ICON_SIZE-128, -1)
 
 	vbox.PackStart(summaryLabel, false, false, 0)
 	vbox.PackStart(bodyLabel, false, false, 0)
 	hbox.PackStart(vbox, false, true, 0)
+
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	container.PackStart(hbox, false, false, 0)
 	container.PackStart(vbox, false, false, 0)
+
+	row.SetHAlign(gtk.ALIGN_FILL)
 	row.Add(container)
 
 	style, _ := hbox.GetStyleContext()
