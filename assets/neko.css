@@ -128,7 +128,13 @@ window {
 scale{
     color: white;
 }
+scale.color{
+    background-color: red;
+}
 scale slider{
+    background-image: radial-gradient(red, grey);
+}
+scale slider:active{
     background-image: radial-gradient(@widget-selected, grey);
 }
 scale hover{

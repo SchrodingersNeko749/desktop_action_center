@@ -10,6 +10,7 @@ import (
 	"github.com/actionCenter/AI"
 	"github.com/actionCenter/Data"
 	"github.com/actionCenter/Model"
+	"github.com/actionCenter/Radio"
 	"github.com/actionCenter/View"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -26,7 +27,7 @@ type ActionCenter struct {
 	NotificationTab *View.NotificationTab
 	WifiTab         *View.WifiTab
 	ScreenTab       *View.ScreenTab
-	RadioTab        *View.RadioTab
+	RadioTab        *Radio.RadioTab
 	AI_Tab          *AI.UI
 }
 
@@ -37,7 +38,7 @@ func NewActionCenter() *ActionCenter {
 		NotificationTab:    &View.NotificationTab{},
 		WifiTab:            &View.WifiTab{},
 		ScreenTab:          &View.ScreenTab{},
-		RadioTab:           &View.RadioTab{},
+		RadioTab:           &Radio.RadioTab{},
 		AI_Tab:             &AI.UI{},
 	}
 	return ac
@@ -63,6 +64,7 @@ func (app *ActionCenter) Init() {
 	}()
 
 	go app.notificationServer.Init(app)
+	app.RadioTab.SetRadioDirectoryServerIP("all.api.radio-browser.info")
 
 	app.initWindow()
 	app.win.ShowAll()
@@ -78,8 +80,8 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetTitle("action-center-panel")
+	fmt.Println(Data.Conf.WINDOW_WIDTH)
 	app.win.SetDefaultSize(Data.Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
 	app.win.SetResizable(false)
@@ -140,7 +142,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 				return nil, err
 			}
 			tabLabel, _ := gtk.LabelNew(child.Properties.Label)
-			tabLabel.SetSizeRequest(Data.Conf.ICON_SIZE, Data.Conf.ICON_SIZE)
+			tabLabel.SetSizeRequest(Data.Conf.ICON_SIZE-12, Data.Conf.ICON_SIZE-12)
 			app.TabControl.AppendPage(childComponent, tabLabel)
 			app.TabControl.GetNPages()
 		} else {
