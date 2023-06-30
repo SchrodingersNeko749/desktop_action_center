@@ -1,4 +1,4 @@
-package AI
+package main
 
 import (
 	"bufio"
@@ -12,9 +12,28 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type Service struct{}
+type Prompt struct {
+	MaxTokens            int     `json:"maxTokens"`
+	Input                string  `json:"input"`
+	Model                string  `json:"model"`
+	IgnoreEos            bool    `json:"ignore_eos"`
+	TopK                 int     `json:"top_k"`
+	TopP                 float64 `json:"top_p"`
+	Temperature          float64 `json:"temperature"`
+	Mirostat             int     `json:"mirostat"`
+	Entropy              int     `json:"entropy"`
+	LearningRate         float64 `json:"learningRate"`
+	TailFreeSamplingRate int     `json:"tailFreeSamplingRate"`
+	TypicalP             int     `json:"typical_p"`
+	PenalizeNewLines     bool    `json:"penalizeNewLines"`
+	PenalizeSpaces       bool    `json:"penalizeSpaces"`
+	RepetitionPenalty    float64 `json:"repetition_penalty"`
+	IncludeIngest        bool    `json:"includeIngest"`
+	IncludeStatistics    bool    `json:"includeStatistics"`
+	OneShot              bool    `json:"oneShot"`
+}
 
-func (service *Service) RunInference(p Prompt, body *gtk.Label) {
+func RunInference(p Prompt, body *gtk.Label) {
 	payload, _ := json.Marshal(p)
 	resp, err := http.Post("http://llama.her.st/completion", "application/json", bytes.NewBuffer(payload))
 	if err != nil {
@@ -48,7 +67,7 @@ func (service *Service) RunInference(p Prompt, body *gtk.Label) {
 	}
 }
 
-func (service *Service) GeneratePrompt(mode string, input string, maxToken int, model string, inclIngest bool, inclStats bool) Prompt {
+func GeneratePrompt(mode string, input string, maxToken int, model string, inclIngest bool, inclStats bool) Prompt {
 	builder := strings.Builder{}
 
 	switch mode {
@@ -91,7 +110,7 @@ func (service *Service) GeneratePrompt(mode string, input string, maxToken int, 
 	return p
 }
 
-func (service *Service) GetModels() []string {
+func GetModels() []string {
 	models := []string{}
 	resp, err := http.Get("http://llama.her.st/models")
 	if err != nil {

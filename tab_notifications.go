@@ -1,43 +1,91 @@
-package Model
+package main
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 
-	"github.com/actionCenter/Data"
-	"github.com/godbus/dbus/v5"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
+type NotificationTab struct {
+	win       *gtk.Window
+	Container *gtk.Box
+	ListBox   *gtk.ListBox
+}
 type NotificationWidget struct {
 	container *gtk.Box
 	id        int
 }
-type Notification struct {
-	AppName           string
-	Id                uint32
-	AppIcon           string
-	Summary           string
-	Body              string
-	Hints             map[string]dbus.Variant
-	Actions           []string
-	ExpirationTimeOut int32
+
+func (app *NotificationTab) Create(window gtk.Window) (*gtk.Box, error) {
+	app.win = &window
+	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
+	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
+	container.SetSizeRequest(app.win.GetAllocatedWidth(), app.win.GetAllocatedHeight())
+	container.SetVExpand(true)
+	container.SetHExpand(true)
+	scrollBox.SetHExpand(true)
+	scrollBox.SetVExpand(true)
+
+	header, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	label, _ := gtk.LabelNew("Notifications")
+	clearBtn, _ := gtk.ButtonNewWithLabel("Clear All")
+	header.PackStart(label, false, false, 0)
+	header.PackEnd(clearBtn, false, true, 1)
+
+	listBox, _ := gtk.ListBoxNew()
+	listBox.SetSelectionMode(gtk.SELECTION_SINGLE)
+
+	app.Container = container
+	app.ListBox = listBox
+
+	container.Add(header)
+	container.Add(scrollBox)
+	scrollBox.Add(listBox)
+
+	clearBtn.Connect("clicked", func() {
+		app.clearNotification()
+	})
+
+	listBox.Connect("row-selected", func() {
+		selected := listBox.GetSelectedRow()
+		if selected != nil {
+			listBox.Remove(selected)
+		}
+	})
+
+	style, _ := container.GetStyleContext()
+	style.AddClass("notification-container")
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = scrollBox.GetStyleContext()
+	style.AddClass("notification-scrollbox")
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = header.GetStyleContext()
+	style.AddClass("notification-container-header")
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = scrollBox.GetStyleContext()
+	style.AddClass("notification-scrollbox")
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style, _ = clearBtn.GetStyleContext()
+	style.AddClass("clear-button")
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+	return container, nil
 }
 
-func NewNotification(appName string, replacesID uint32, appIcon string, summary string, body string, actions []string, hints map[string]dbus.Variant, expireTimeout int32) Notification {
-	n := Notification{
-		AppName:           appName,
-		Id:                replacesID,
-		AppIcon:           appIcon,
-		Summary:           summary,
-		Body:              body,
-		Hints:             hints,
-		Actions:           actions,
-		ExpirationTimeOut: expireTimeout,
+func (app *NotificationTab) AddNotification(widget *gtk.ListBoxRow) {
+	app.ListBox.Insert(widget, 0)
+	if app.win.GetVisible() {
+		app.Container.ShowAll()
 	}
-	return n
+}
+
+func (app *NotificationTab) clearNotification() {
+	for app.ListBox.GetChildren().Length() > 0 {
+		app.ListBox.Remove(app.ListBox.GetRowAtIndex(0))
+	}
 }
 
 func (n *Notification) RemoveHyperLinkFromBody() {
@@ -109,13 +157,13 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 
 	style, _ := hbox.GetStyleContext()
 	style.AddClass("notification-widget")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = summaryLabel.GetStyleContext()
 	style.AddClass("notification-summary")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = bodyLabel.GetStyleContext()
 	style.AddClass("notification-body")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	return row, bodyLabel
 }
@@ -125,8 +173,8 @@ func resize(icon *gtk.Image) {
 	if pixbuf == nil {
 		theme, _ := gtk.IconThemeGetDefault()
 		iconName, _ := icon.GetIconName()
-		pixbuf, _ = theme.LoadIconForScale(iconName, Data.Conf.ICON_SIZE, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
+		pixbuf, _ = theme.LoadIconForScale(iconName, Conf.ICON_SIZE, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
 	}
-	scaledPixbuf, _ := pixbuf.ScaleSimple(Data.Conf.ICON_SIZE, Data.Conf.ICON_SIZE, gdk.INTERP_BILINEAR)
+	scaledPixbuf, _ := pixbuf.ScaleSimple(Conf.ICON_SIZE, Conf.ICON_SIZE, gdk.INTERP_BILINEAR)
 	icon.SetFromPixbuf(scaledPixbuf)
 }

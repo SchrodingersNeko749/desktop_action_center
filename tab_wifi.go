@@ -1,18 +1,22 @@
-package View
+package main
 
-import "github.com/gotk3/gotk3/gtk"
+import (
+	"github.com/gotk3/gotk3/gtk"
+)
 
-type RadioTab struct {
+type WifiTab struct {
 	container *gtk.Box
 	listbox   *gtk.ListBox
 }
 
-func (app *RadioTab) Create() (*gtk.Box, error) {
+func (app *WifiTab) Create() (*gtk.Box, error) {
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	container.SetHExpand(false)
 	if err != nil {
 		return nil, err
 	}
-	label, err := gtk.LabelNew("Radio")
+	label, err := gtk.LabelNew("wifi")
+
 	if err != nil {
 		return nil, err
 	}

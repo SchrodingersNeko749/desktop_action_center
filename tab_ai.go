@@ -1,23 +1,19 @@
-package AI
+package main
 
 import (
 	"os/user"
 
-	"github.com/actionCenter/Data"
-	"github.com/actionCenter/Model"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type UI struct {
+type AiTab struct {
 	container *gtk.Box
 	listBox   *gtk.ListBox
-	Messages  []Model.NotificationWidget
-	Service   *Service
+	Messages  []NotificationWidget
 }
 
-func (ai *UI) Create() (*gtk.Box, error) {
-	ai.Service = &Service{}
+func (ai *AiTab) Create() (*gtk.Box, error) {
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 10)
 	scrollBox, _ := gtk.ScrolledWindowNew(nil, nil)
 	scrollBox.SetHExpand(true)
@@ -60,24 +56,24 @@ func (ai *UI) Create() (*gtk.Box, error) {
 
 	style, _ := container.GetStyleContext()
 	style.AddClass("ai-container")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = scrollBox.GetStyleContext()
 	style.AddClass("ai-scrollbox")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = header.GetStyleContext()
 	style.AddClass("ai-container-header")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style, _ = inputBox.GetStyleContext()
 	style.AddClass("ai-inputbox")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	return container, nil
 }
 
-func (ai *UI) AddMessage(msg string) {
+func (ai *AiTab) AddMessage(msg string) {
 	username, _ := user.Current()
-	widget, _ := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0))
-	responseWidget, body := Model.CreateNotificationComponent(Model.NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
+	widget, _ := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0))
+	responseWidget, body := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
 
 	glib.IdleAdd(func() {
 		ai.listBox.Add(widget)
@@ -85,6 +81,6 @@ func (ai *UI) AddMessage(msg string) {
 		ai.listBox.ShowAll()
 	})
 
-	prompt := ai.Service.GeneratePrompt("instruction", msg, 1024, "nous-hermes-13b.ggmlv3.q4_0.bin", false, false)
-	go ai.Service.RunInference(prompt, body)
+	prompt := GeneratePrompt("instruction", msg, 1024, "nous-hermes-13b.ggmlv3.q4_0.bin", false, false)
+	go RunInference(prompt, body)
 }

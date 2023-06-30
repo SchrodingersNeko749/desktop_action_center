@@ -1,18 +1,18 @@
-package View
+package main
 
 import "github.com/gotk3/gotk3/gtk"
 
-type ScreenTab struct {
+type RadioTab struct {
 	container *gtk.Box
 	listbox   *gtk.ListBox
 }
 
-func (app *ScreenTab) Create() (*gtk.Box, error) {
+func (app *RadioTab) Create() (*gtk.Box, error) {
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
 		return nil, err
 	}
-	label, err := gtk.LabelNew("Wifi")
+	label, err := gtk.LabelNew("Radio")
 	if err != nil {
 		return nil, err
 	}

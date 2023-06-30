@@ -1,4 +1,4 @@
-package Data
+package main
 
 import (
 	"encoding/json"
@@ -8,10 +8,6 @@ import (
 
 	"github.com/gotk3/gotk3/gtk"
 )
-
-var Conf *Config
-var WidgetConfs []WidgetConfig
-var StyleProvider *gtk.CssProvider
 
 type Config struct {
 	PATH               string
@@ -34,6 +30,10 @@ type WidgetProperties struct {
 	Spacing     int    `json:"spacing"`
 	Label       string `json:"label"`
 }
+
+var Conf *Config
+var WidgetConfs []WidgetConfig
+var StyleProvider *gtk.CssProvider
 
 func LoadConfig() {
 	user, _ := user.Current()
