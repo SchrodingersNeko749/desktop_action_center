@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/actionCenter/Data"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -77,23 +76,30 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 
 }
 func (radio *RadioTab) AddStation(station Station) error {
-
 	stationWidget, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	fmt.Print("start")
-	img, err := GetFavicon(station.Favicon)
-	if err != nil {
-		return err
+	if station.Favicon != "" {
+		img, err := GetFavicon(station.Favicon)
+		if err != nil {
+			img, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+			img.SetPixelSize(64)
+			hbox.Add(img)
+		}
+		hbox.Add(img)
+
+	} else {
+		img, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+		img.SetPixelSize(64)
+		hbox.Add(img)
 	}
-	fmt.Print("finish")
-
-	hbox.Add(img)
-
+	nameLabel, _ := gtk.LabelNew(station.Name)
+	vbox.Add(nameLabel)
 	hbox.Add(vbox)
 	stationWidget.Add(hbox)
 
 	radio.listbox.Add(stationWidget)
+	radio.foundStations = append(radio.foundStations, station)
 	radio.listbox.ShowAll()
 	return nil
 }
@@ -104,8 +110,10 @@ func Stop() {
 
 }
 func GetFavicon(faviconUrl string) (*gtk.Image, error) {
+	fmt.Println(faviconUrl)
 	response, err := http.Get(faviconUrl)
 	if err != nil {
+		fmt.Println("errors found")
 		return nil, err
 	}
 	defer response.Body.Close()
@@ -113,34 +121,47 @@ func GetFavicon(faviconUrl string) (*gtk.Image, error) {
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, response.Body)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
-	img, err := png.Decode(response.Body)
+
+	img, err := png.Decode(buf)
 	if err != nil {
 		return nil, err
 	}
-	// Convert the image to a GTK pixbuf
-	pixbuf, err := gdk.PixbufNewFromBytes(buf.Bytes(), gdk.COLORSPACE_RGB, false, 8, img.Bounds().Size().X, img.Bounds().Size().Y, 0)
+
+	width := img.Bounds().Size().X
+	height := img.Bounds().Size().Y
+	stride := width * 4
+	pixels := make([]byte, height*stride)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			r, g, b, a := img.At(x, y).RGBA()
+			p := (y*width + x) * 4
+			pixels[p] = byte(r)
+			pixels[p+1] = byte(g)
+			pixels[p+2] = byte(b)
+			pixels[p+3] = byte(a)
+		}
+	}
+
+	pixbuf, err := gdk.PixbufNewFromData(pixels, gdk.COLORSPACE_RGB, true, 8, width, height, stride)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
+
 	gtkimg, err := gtk.ImageNewFromPixbuf(pixbuf)
 	if err != nil {
 		return nil, err
 	}
+
+	Resize(gtkimg)
 	return gtkimg, nil
 }
 
-// Duplicate code
 func Resize(icon *gtk.Image) {
 	pixbuf := icon.GetPixbuf()
-	if pixbuf == nil {
-		theme, _ := gtk.IconThemeGetDefault()
-		iconName, _ := icon.GetIconName()
-		pixbuf, _ = theme.LoadIconForScale(iconName, Data.Conf.ICON_SIZE, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
-	}
-	scaledPixbuf, _ := pixbuf.ScaleSimple(Data.Conf.ICON_SIZE, Data.Conf.ICON_SIZE, gdk.INTERP_BILINEAR)
+	iconSize := 64 // Set the desired icon size here
+	scaledPixbuf, _ := pixbuf.ScaleSimple(iconSize, iconSize, gdk.INTERP_BILINEAR)
 	icon.SetFromPixbuf(scaledPixbuf)
 }

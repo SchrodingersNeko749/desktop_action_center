@@ -2,6 +2,7 @@ package Radio
 
 import (
 	"github.com/actionCenter/Data"
+	"github.com/fhs/gompd/mpd"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -9,9 +10,14 @@ type RadioTab struct {
 	container         *gtk.Box
 	listbox           *gtk.ListBox
 	directoryServerIp string
+	foundStations     []Station
+	mpdClient         mpd.Client
 }
 
 func (radio *RadioTab) Create() (*gtk.Box, error) {
+	mpdclient, _ := mpd.Dial("tcp", "localhost:6600")
+	radio.mpdClient = *mpdclient
+	radio.mpdClient.Clear()
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	// Music player
 	playerBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
@@ -30,10 +36,22 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	advancedSearchBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	inputBox, _ := gtk.EntryNew()
 	listBox, _ := gtk.ListBoxNew()
+	listBox.Connect("row-selected", func() {
+		selected := listBox.GetSelectedRow()
+		if selected != nil {
+			radio.mpdClient.Clear()
+			label.SetText(radio.foundStations[selected.GetIndex()].Name)
+			radio.mpdClient.Add(radio.foundStations[selected.GetIndex()].URL)
+			radio.mpdClient.Play(0)
+		}
+	})
 	inputBox.Connect("activate", func() {
 		text, _ := inputBox.GetText()
 		inputBox.SetText("")
-		stations := radio.AdvancedStationSearch(text, "", 1)
+		stations := radio.AdvancedStationSearch(text, "", 3)
+		for listBox.GetChildren().Length() > 0 {
+			listBox.Remove(listBox.GetRowAtIndex(0))
+		}
 		for _, s := range stations {
 			radio.AddStation(s)
 		}
