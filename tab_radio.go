@@ -1,7 +1,6 @@
-package Radio
+package main
 
 import (
-	"github.com/actionCenter/Data"
 	"github.com/fhs/gompd/mpd"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -58,7 +57,7 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	})
 	style, _ := inputBox.GetStyleContext()
 	style.AddClass("ai-inputbox")
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	advancedSearchBox.Add(listBox)
 	advancedSearchBox.Add(inputBox)
 

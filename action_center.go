@@ -1,4 +1,4 @@
-package Service
+package main
 
 import (
 	"fmt"
@@ -6,12 +6,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
-
-	"github.com/actionCenter/AI"
-	"github.com/actionCenter/Data"
-	"github.com/actionCenter/Model"
-	"github.com/actionCenter/Radio"
-	"github.com/actionCenter/View"
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
@@ -22,53 +16,54 @@ type ActionCenter struct {
 	container          *gtk.Box
 	notificationServer *NotificationServer
 
-	Header          *View.Header
+	Header          *Header
 	TabControl      *gtk.Notebook
-	NotificationTab *View.NotificationTab
-	WifiTab         *View.WifiTab
-	ScreenTab       *View.ScreenTab
-	RadioTab        *Radio.RadioTab
-	AI_Tab          *AI.UI
+	NotificationTab *NotificationTab
+	WifiTab         *WifiTab
+	ScreenTab       *ScreenTab
+	RadioTab        *RadioTab
+	AI_Tab          *AiTab
 }
 
-func NewActionCenter() *ActionCenter {
-	ac := &ActionCenter{
+func main() {
+	gtk.Init(nil)
+	LoadConfig()
+
+	app := &ActionCenter{
 		notificationServer: &NotificationServer{},
-		Header:             &View.Header{},
-		NotificationTab:    &View.NotificationTab{},
-		WifiTab:            &View.WifiTab{},
-		ScreenTab:          &View.ScreenTab{},
-		RadioTab:           &Radio.RadioTab{},
-		AI_Tab:             &AI.UI{},
+		Header:             &Header{},
+		NotificationTab:    &NotificationTab{},
+		WifiTab:            &WifiTab{},
+		ScreenTab:          &ScreenTab{},
+		RadioTab:           &RadioTab{},
+		AI_Tab:             &AiTab{},
 	}
-	return ac
-}
 
-func (app *ActionCenter) Init() {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGTERM)
-	go func() {
-		fmt.Println("Monitoring signals")
-		for {
-			sig := <-sigs
-			fmt.Println(sig)
-			switch sig {
-			case syscall.SIGUSR1:
-				app.ToggleVisiblity()
-			case syscall.SIGTERM:
-				fmt.Println("Closing dbus conn")
-				app.notificationServer.conn.Close()
-				os.Exit(0)
-			}
-		}
-	}()
-
+	go app.HandleSignals()
 	go app.notificationServer.Init(app)
 	app.RadioTab.SetRadioDirectoryServerIP("all.api.radio-browser.info")
 
 	app.initWindow()
 	app.win.ShowAll()
 	gtk.Main()
+}
+
+func (app *ActionCenter) HandleSignals() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGTERM)
+	fmt.Println("Monitoring signals")
+	for {
+		sig := <-sigs
+		fmt.Println(sig)
+		switch sig {
+		case syscall.SIGUSR1:
+			app.ToggleVisiblity()
+		case syscall.SIGTERM:
+			fmt.Println("Closing dbus conn")
+			app.notificationServer.Conn.Close()
+			os.Exit(0)
+		}
+	}
 }
 
 func (app *ActionCenter) initWindow() {
@@ -81,31 +76,30 @@ func (app *ActionCenter) initWindow() {
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	app.win.SetTitle("action-center-panel")
-	fmt.Println(Data.Conf.WINDOW_WIDTH)
-	app.win.SetDefaultSize(Data.Conf.WINDOW_WIDTH, height-32)
-	app.win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
+	app.win.SetDefaultSize(Conf.WINDOW_WIDTH, height-32)
+	app.win.Move(width-Conf.WINDOW_WIDTH, 32)
 	app.win.SetResizable(false)
 	app.win.SetVisual(visual)
 	app.win.SetDecorated(false)
 	app.container, _ = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	for _, widget := range Data.WidgetConfs {
+	for _, widget := range WidgetConfs {
 		widgetContainer, _ := app.createComponent(&widget)
 		app.container.Add(widgetContainer)
 	}
 	app.win.Add(app.container)
 
 	app.win.Connect("configure-event", func(win *gtk.Window, event *gdk.Event) {
-		win.Move(width-Data.Conf.WINDOW_WIDTH, 32)
+		win.Move(width-Conf.WINDOW_WIDTH, 32)
 	})
 	app.win.Connect("destroy", func() {
 		gtk.MainQuit()
 	})
 
 	style, _ := app.win.GetStyleContext()
-	style.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	style.AddProvider(StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 }
 
-func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, error) {
+func (app *ActionCenter) createComponent(widget *WidgetConfig) (*gtk.Box, error) {
 	var component *gtk.Box
 	var err error
 
@@ -142,7 +136,7 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 				return nil, err
 			}
 			tabLabel, _ := gtk.LabelNew(child.Properties.Label)
-			tabLabel.SetSizeRequest(Data.Conf.ICON_SIZE-12, Data.Conf.ICON_SIZE-12)
+			tabLabel.SetSizeRequest(Conf.ICON_SIZE, Conf.ICON_SIZE)
 			app.TabControl.AppendPage(childComponent, tabLabel)
 			app.TabControl.GetNPages()
 		} else {
@@ -153,29 +147,28 @@ func (app *ActionCenter) createComponent(widget *Data.WidgetConfig) (*gtk.Box, e
 			component.Add(childContainer)
 		}
 	}
-
 	return component, nil
 }
 
-func (app *ActionCenter) createBrightnessComponent(configWidget *Data.WidgetConfig) (*gtk.Box, error) {
+func (app *ActionCenter) createBrightnessComponent(configWidget *WidgetConfig) (*gtk.Box, error) {
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
 	style, _ := hbox.GetStyleContext()
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style.AddClass("notification-container-header")
 
 	brightnessBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
 	brightnessBar.SetHExpand(true)
 	brightnessBar.SetSizeRequest(500, -1)
-	cmd := exec.Command("./getbrightness.sh")
+	cmd := exec.Command("./assets/getbrightness.sh")
 	output, _ := cmd.Output()
 	brightnessBar.SetValue(float64(output[0]))
 	style, _ = brightnessBar.GetStyleContext()
-	style.AddProvider(Data.StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	brightnessBar.Connect("value-changed", func() {
 		v := brightnessBar.GetValue()
-		cmd := exec.Command("./setbrightness.sh", fmt.Sprintf("%d", int(v)))
+		cmd := exec.Command("./assets/setbrightness.sh", fmt.Sprintf("%d", int(v)))
 		output, err := cmd.Output()
 		fmt.Println(string(output), err)
 	})
@@ -188,9 +181,9 @@ func (app *ActionCenter) createBrightnessComponent(configWidget *Data.WidgetConf
 	return hbox, err
 }
 
-func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
+func (app *ActionCenter) createTabViewerContainer(configWidget *WidgetConfig) (*gtk.Box, *gtk.Notebook, error) {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	box.SetSizeRequest(Data.Conf.WINDOW_WIDTH, -1)
+	box.SetSizeRequest(Conf.WINDOW_WIDTH, -1)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -201,18 +194,14 @@ func (app *ActionCenter) createTabViewerContainer(configWidget *Data.WidgetConfi
 
 	stylectx, _ := notebook.GetStyleContext()
 	stylectx.AddClass("tab-viewer")
-	stylectx.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	stylectx.AddProvider(StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	box.Add(notebook)
 	return box, notebook, nil
 }
 
-func (app *ActionCenter) GetNotifications() ([]Model.Notification, error) {
-	return app.notificationServer.GetNotifications()
-}
-
-func (app *ActionCenter) AddNotification(n Model.Notification) {
-	notifictation, _ := Model.CreateNotificationComponent(n)
+func (app *ActionCenter) AddNotification(n Notification) {
+	notifictation, _ := CreateNotificationComponent(n)
 	app.NotificationTab.AddNotification(notifictation)
 	pageNum := app.TabControl.PageNum(app.NotificationTab.Container)
 	app.TabControl.SetCurrentPage(pageNum)

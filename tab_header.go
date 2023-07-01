@@ -1,9 +1,8 @@
-package View
+package main
 
 import (
 	"time"
 
-	"github.com/actionCenter/Data"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -28,9 +27,9 @@ func (app *Header) Create() *gtk.Box {
 	vbox.PackStart(clockLabel, true, true, 0)
 
 	lStyle, _ := clockLabel.GetStyleContext()
-	lStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	lStyle.AddProvider(StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 	vboxStyle, _ := vbox.GetStyleContext()
-	vboxStyle.AddProvider(Data.StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	vboxStyle.AddProvider(StyleProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
 
 	return vbox
 }
