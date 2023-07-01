@@ -1,4 +1,4 @@
-package Radio
+package main
 
 import (
 	"bytes"
@@ -157,11 +157,4 @@ func GetFavicon(faviconUrl string) (*gtk.Image, error) {
 
 	Resize(gtkimg)
 	return gtkimg, nil
-}
-
-func Resize(icon *gtk.Image) {
-	pixbuf := icon.GetPixbuf()
-	iconSize := 64 // Set the desired icon size here
-	scaledPixbuf, _ := pixbuf.ScaleSimple(iconSize, iconSize, gdk.INTERP_BILINEAR)
-	icon.SetFromPixbuf(scaledPixbuf)
 }
