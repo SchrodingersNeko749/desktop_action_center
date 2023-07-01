@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"html"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/gotk3/gotk3/glib"
-	"github.com/grokify/html-strip-tags-go"
+	strip "github.com/grokify/html-strip-tags-go"
 )
 
 type NotificationServer struct {
@@ -39,8 +40,9 @@ func (n *NotificationServer) Init(ac *ActionCenter) error {
 
 func (n *NotificationServer) Notify(appName string, replacesID uint32, appIcon string, summary string, body string, actions []string, hints map[string]dbus.Variant, expireTimeout int32) (uint32, *dbus.Error) {
 	unescaped := strip.StripTags(body)
+	unescaped = html.UnescapeString(unescaped)
 	notification := NewNotification(appName, replacesID, appIcon, summary, unescaped, actions, hints, expireTimeout)
-	//notification.RemoveHyperLinkFromBody()
+
 	glib.IdleAdd(func() {
 		n.ActionCenter.AddNotification(notification)
 	})
