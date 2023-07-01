@@ -12,7 +12,7 @@ import (
 )
 
 type ActionCenter struct {
-	gotShowSignal      bool
+	stickyShow         bool
 	win                *gtk.Window
 	container          *gtk.Box
 	notificationServer *NotificationServer
@@ -59,7 +59,7 @@ func (app *ActionCenter) HandleSignals() {
 		switch sig {
 		case syscall.SIGUSR1:
 			app.ToggleVisiblity()
-			app.gotShowSignal = true
+			app.stickyShow = true
 		case syscall.SIGTERM:
 			fmt.Println("Closing dbus conn")
 			app.notificationServer.Conn.Close()
@@ -77,6 +77,7 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
+	app.stickyShow = true
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Conf.WINDOW_WIDTH, 32)
@@ -98,10 +99,10 @@ func (app *ActionCenter) initWindow() {
 	})
 
 	app.win.Connect("focus-out-event", func() {
-		if !app.gotShowSignal {
+		if !app.stickyShow {
 			app.win.Hide()
 		}
-		app.gotShowSignal = false
+		app.stickyShow = false
 	})
 
 	style, _ := app.win.GetStyleContext()
