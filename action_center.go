@@ -12,6 +12,7 @@ import (
 )
 
 type ActionCenter struct {
+	gotShowSignal      bool
 	win                *gtk.Window
 	container          *gtk.Box
 	notificationServer *NotificationServer
@@ -58,6 +59,7 @@ func (app *ActionCenter) HandleSignals() {
 		switch sig {
 		case syscall.SIGUSR1:
 			app.ToggleVisiblity()
+			app.gotShowSignal = true
 		case syscall.SIGTERM:
 			fmt.Println("Closing dbus conn")
 			app.notificationServer.Conn.Close()
@@ -93,6 +95,13 @@ func (app *ActionCenter) initWindow() {
 	})
 	app.win.Connect("destroy", func() {
 		gtk.MainQuit()
+	})
+
+	app.win.Connect("focus-out-event", func() {
+		if !app.gotShowSignal {
+			app.win.Hide()
+		}
+		app.gotShowSignal = false
 	})
 
 	style, _ := app.win.GetStyleContext()
