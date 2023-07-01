@@ -41,6 +41,7 @@ func main() {
 
 	go app.HandleSignals()
 	go app.notificationServer.Init(app)
+	app.RadioTab.SetRadioDirectoryServerIP("all.api.radio-browser.info")
 
 	app.initWindow()
 	app.win.ShowAll()
@@ -74,7 +75,6 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	app.win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DOCK)
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Conf.WINDOW_WIDTH, 32)
