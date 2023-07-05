@@ -153,9 +153,11 @@ func (app *ActionCenter) createComponent(widget *WidgetConfig) (*gtk.Box, error)
 func (app *ActionCenter) createBrightnessComponent(configWidget *WidgetConfig) (*gtk.Box, error) {
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
+	hbox.SetVAlign(gtk.ALIGN_CENTER)
+
 	style, _ := hbox.GetStyleContext()
 	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-	style.AddClass("notification-container-header")
+	style.AddClass("scale-box")
 
 	brightnessBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
 	brightnessBar.SetHExpand(true)

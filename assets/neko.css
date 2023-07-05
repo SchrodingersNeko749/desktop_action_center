@@ -125,6 +125,9 @@ window {
     border: 2px solid rgb(111, 111, 111);
     border-radius: 25px;
 }
+.scale-box{
+    background-color: red;
+}
 scale{
     color: white;
 }
