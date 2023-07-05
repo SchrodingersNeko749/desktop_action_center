@@ -95,7 +95,7 @@ func (radio *RadioTab) AddStation(station Station) error {
 		img, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
 		img.SetPixelSize(64)
 	}
-	station.FaviconImage = img
+	station.FaviconImage, _ = gtk.ImageNewFromPixbuf(img.GetPixbuf())
 	Resize(img, Conf.ICON_SIZE)
 	hbox.Add(img)
 	nameLabel, _ := gtk.LabelNew(station.Name)

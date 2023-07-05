@@ -18,15 +18,9 @@ type RadioTab struct {
 }
 
 func (radio *RadioTab) Create() (*gtk.Box, error) {
-	mpdclient, err := mpd.Dial("tcp", "localhost:6600")
-
-	if err != nil {
-		fmt.Println("Error connecting to mpd @ localhost:6600")
-
-	}
+	mpdclient, _ := mpd.Dial("tcp", "localhost:6600")
 	radio.mpdClient = *mpdclient
 	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	// Music player
 	playerBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	label, _ := gtk.LabelNew("loading")
 	go func() {
@@ -111,8 +105,9 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 			radio.AddStation(s)
 		}
 	})
+
 	style, _ := inputBox.GetStyleContext()
-	style.AddClass("ai-inputbox")
+	style.AddClass("radio-inputbox")
 	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	advancedSearchBox.Add(listBox)
 	advancedSearchBox.Add(inputBox)
