@@ -76,29 +76,34 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 
 }
 func (radio *RadioTab) AddStation(station Station) error {
-	stationWidget, _ := gtk.ListBoxRowNew()
+	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	var img *gtk.Image
+	var err error
 	if station.Favicon != "" {
-		img, err := GetFavicon(station.Favicon)
+		img, err = DownloadFavicon(station.Favicon)
 		if err != nil {
-			img, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+			img, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
 			img.SetPixelSize(64)
+		}
+		if img != nil {
 			hbox.Add(img)
 		}
-		hbox.Add(img)
 
 	} else {
-		img, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+		img, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
 		img.SetPixelSize(64)
-		hbox.Add(img)
 	}
+	station.FaviconImage, _ = gtk.ImageNewFromPixbuf(img.GetPixbuf())
+	Resize(img, Conf.ICON_SIZE)
+	hbox.Add(img)
 	nameLabel, _ := gtk.LabelNew(station.Name)
 	vbox.Add(nameLabel)
 	hbox.Add(vbox)
-	stationWidget.Add(hbox)
+	stationRow.Add(hbox)
 
-	radio.listbox.Add(stationWidget)
+	radio.listbox.Add(stationRow)
 	radio.foundStations = append(radio.foundStations, station)
 	radio.listbox.ShowAll()
 	return nil
@@ -106,13 +111,11 @@ func (radio *RadioTab) AddStation(station Station) error {
 func Play() {
 
 }
-func Stop() {
 
-}
-func GetFavicon(faviconUrl string) (*gtk.Image, error) {
+func DownloadFavicon(faviconUrl string) (*gtk.Image, error) {
 	fmt.Println(faviconUrl)
 	response, err := http.Get(faviconUrl)
-	if err != nil {
+	if err != nil || response.StatusCode != 200 {
 		fmt.Println("errors found")
 		return nil, err
 	}
@@ -154,7 +157,5 @@ func GetFavicon(faviconUrl string) (*gtk.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	Resize(gtkimg)
 	return gtkimg, nil
 }

@@ -1,6 +1,10 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/gotk3/gotk3/gtk"
+)
 
 type Station struct {
 	ChangeUUID                string  `json:"changeuuid"`
@@ -37,6 +41,7 @@ type Station struct {
 	GeoLat                    float64 `json:"geo_lat"`
 	GeoLong                   float64 `json:"geo_long"`
 	HasExtendedInfo           bool    `json:"has_extended_info"`
+	FaviconImage              *gtk.Image
 }
 type requestData struct {
 	Name        string `json:"name"`

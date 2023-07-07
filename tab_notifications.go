@@ -132,7 +132,7 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 		icon, _ = gtk.ImageNewFromIconName("gtk-dialog-info", gtk.ICON_SIZE_LARGE_TOOLBAR)
 	}
 	if icon != nil {
-		Resize(icon)
+		Resize(icon, Conf.ICON_SIZE)
 		hbox.PackStart(icon, false, false, 0)
 	}
 
@@ -168,13 +168,13 @@ func CreateNotificationComponent(n Notification) (*gtk.ListBoxRow, *gtk.Label) {
 	return row, bodyLabel
 }
 
-func Resize(icon *gtk.Image) {
+func Resize(icon *gtk.Image, size int) {
 	pixbuf := icon.GetPixbuf()
 	if pixbuf == nil {
 		theme, _ := gtk.IconThemeGetDefault()
 		iconName, _ := icon.GetIconName()
-		pixbuf, _ = theme.LoadIconForScale(iconName, Conf.ICON_SIZE, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
+		pixbuf, _ = theme.LoadIconForScale(iconName, size, 1, gtk.ICON_LOOKUP_FORCE_SIZE)
 	}
-	scaledPixbuf, _ := pixbuf.ScaleSimple(Conf.ICON_SIZE, Conf.ICON_SIZE, gdk.INTERP_BILINEAR)
+	scaledPixbuf, _ := pixbuf.ScaleSimple(size, size, gdk.INTERP_BILINEAR)
 	icon.SetFromPixbuf(scaledPixbuf)
 }
