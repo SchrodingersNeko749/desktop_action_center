@@ -75,29 +75,32 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 	return stations
 
 }
-func (radio *RadioTab) AddStation(station Station) error {
+func (radio *RadioTab) AddFoundStation(station Station) error {
 	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	var img *gtk.Image
+	var favicon *gtk.Image
 	var err error
 	if station.Favicon != "" {
-		img, err = DownloadFavicon(station.Favicon)
+		favicon, err = DownloadFavicon(station.Favicon)
 		if err != nil {
-			img, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-			img.SetPixelSize(64)
+			favicon, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+			favicon.SetPixelSize(64)
 		}
-		if img != nil {
-			hbox.Add(img)
+		if favicon != nil {
+			hbox.Add(favicon)
 		}
 
 	} else {
-		img, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-		img.SetPixelSize(64)
+		favicon, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+		favicon.SetPixelSize(64)
 	}
-	station.FaviconImage, _ = gtk.ImageNewFromPixbuf(img.GetPixbuf())
-	Resize(img, Conf.ICON_SIZE)
-	hbox.Add(img)
+	// saving image data of original favicon
+	station.FaviconImage, _ = gtk.ImageNewFromPixbuf(favicon.GetPixbuf())
+
+	// resizing the image for the listboxrow
+	Resize(favicon, Conf.ICON_SIZE)
+	hbox.Add(favicon)
 	nameLabel, _ := gtk.LabelNew(station.Name)
 	vbox.Add(nameLabel)
 	hbox.Add(vbox)

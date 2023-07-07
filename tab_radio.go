@@ -70,39 +70,44 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 		return nil, err
 	}
 	// Advanced search
-	advancedSearchBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	inputBox, _ := gtk.EntryNew()
+	inputBox.SetIconFromIconName(gtk.ENTRY_ICON_PRIMARY, "search")
 	listBox, _ := gtk.ListBoxNew()
+	advancedSearchBoxExpander, _ := gtk.ExpanderNew("Advanced Search")
+	advancedSearchBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
+	inputBoxHintLabel, _ := gtk.LabelNew("Search new stations")
+	advancedSearchBox.Add(inputBoxHintLabel)
 	listBox.Connect("row-selected", func() {
 		selected := listBox.GetSelectedRow()
 		if selected != nil {
 			radio.mpdClient.Clear()
 			radio.currentStation = radio.foundStations[selected.GetIndex()]
-			newImage := radio.currentStation.FaviconImage
-			Resize(newImage, 128)
-			// Set the new image on the stationImg object
-			stationImg.SetFromPixbuf(newImage.GetPixbuf())
+			if radio.currentStation.Favicon == "" {
+				stationImg.SetFromIconName("radio", 180)
+			} else {
+				newImage := radio.currentStation.FaviconImage
+				stationImg.SetFromPixbuf(newImage.GetPixbuf())
+				Resize(stationImg, 180)
+			}
 			playerBox.ShowAll()
 			label.SetText(radio.currentStation.Name)
 
-			radio.mpdClient.Add(radio.foundStations[selected.GetIndex()].URL)
+			radio.mpdClient.Add(radio.currentStation.URL)
 			radio.mpdClient.Play(0)
 		}
 	})
 	inputBox.Connect("activate", func() {
 		text, _ := inputBox.GetText()
 		inputBox.SetText("")
-		stations := radio.AdvancedStationSearch(text, "", 3)
+		radio.foundStations = []Station{}
+		stations := radio.AdvancedStationSearch(text, "", 5)
+		inputBoxHintLabel.SetText(fmt.Sprintf("Search result for %s, %d Stations found", text, len(stations)))
 		for listBox.GetChildren().Length() > 0 {
 			listBox.Remove(listBox.GetRowAtIndex(0))
 		}
-		if len(stations) == 0 {
-			l, _ := gtk.LabelNew("no stations found")
-			listBox.Add(l)
-			radio.listbox.ShowAll()
-		}
+
 		for _, s := range stations {
-			radio.AddStation(s)
+			radio.AddFoundStation(s)
 		}
 	})
 
@@ -111,11 +116,12 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	advancedSearchBox.Add(listBox)
 	advancedSearchBox.Add(inputBox)
+	advancedSearchBoxExpander.Add(advancedSearchBox)
 
 	radio.listbox = listBox
 	radio.container = container
-	container.PackStart(playerBox, true, true, 0)
-	container.PackStart(advancedSearchBox, true, true, 0)
+	container.Add(playerBox)
+	container.PackStart(advancedSearchBoxExpander, false, true, 0)
 
 	return container, nil
 }
