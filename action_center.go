@@ -12,7 +12,7 @@ import (
 )
 
 type ActionCenter struct {
-	stickyShow         bool
+	StickyShow         bool
 	win                *gtk.Window
 	container          *gtk.Box
 	notificationServer *NotificationServer
@@ -59,7 +59,7 @@ func (app *ActionCenter) HandleSignals() {
 		switch sig {
 		case syscall.SIGUSR1:
 			app.ToggleVisiblity()
-			app.stickyShow = true
+			app.StickyShow = true
 		case syscall.SIGTERM:
 			fmt.Println("Closing dbus conn")
 			app.notificationServer.Conn.Close()
@@ -77,7 +77,7 @@ func (app *ActionCenter) initWindow() {
 	height := monitor.GetGeometry().GetHeight()
 
 	app.win, _ = gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	app.stickyShow = true
+	app.StickyShow = true
 	app.win.SetTitle("action-center-panel")
 	app.win.SetDefaultSize(Conf.WINDOW_WIDTH, height-32)
 	app.win.Move(width-Conf.WINDOW_WIDTH, 32)
@@ -99,10 +99,10 @@ func (app *ActionCenter) initWindow() {
 	})
 
 	app.win.Connect("focus-out-event", func() {
-		if !app.stickyShow {
+		if !app.StickyShow {
 			app.win.Hide()
 		}
-		app.stickyShow = false
+		app.StickyShow = false
 	})
 
 	style, _ := app.win.GetStyleContext()
@@ -129,7 +129,7 @@ func (app *ActionCenter) createComponent(widget *WidgetConfig) (*gtk.Box, error)
 	case "notification":
 		component, err = app.NotificationTab.Create(*app.win)
 	case "capture":
-		component, err = app.ScreenTab.Create()
+		component, err = app.ScreenTab.Create(app)
 	default:
 		return nil, fmt.Errorf("unrecognized widget type: %s", widget.Type)
 	}
