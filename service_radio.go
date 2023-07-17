@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"math/rand"
@@ -61,8 +62,6 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 		return nil
 	}
 	defer resp.Body.Close()
-
-	fmt.Println("Response status:", resp.Status)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
@@ -74,22 +73,6 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 	}
 	return stations
 
-}
-func (radio *RadioTab) CreateStationWidget() error {
-	stationRow, _ := gtk.ListBoxRowNew()
-	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
-	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	favicon, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-	favicon.SetPixelSize(64)
-	hbox.Add(favicon)
-	nameLabel, _ := gtk.LabelNew("Loading ... ")
-	vbox.Add(nameLabel)
-	hbox.Add(vbox)
-	stationRow.Add(hbox)
-
-	radio.listbox.Add(stationRow)
-	radio.listbox.ShowAll()
-	return nil
 }
 
 //	func (radio *RadioTab) PopulateStationWidget(stationRow *gtk.ListBoxRow, station Station) error {
@@ -113,27 +96,9 @@ func (radio *RadioTab) AddFoundStation(station Station) error {
 	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	var favicon *gtk.Image
-	var err error
-	if station.Favicon != "" {
-		favicon, err = DownloadFavicon(station.Favicon)
-		if err != nil {
-			favicon, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-			favicon.SetPixelSize(64)
-		}
-		if favicon != nil {
-			hbox.Add(favicon)
-		}
+	favicon := DownloadImage(station.Favicon)
+	station.FaviconImage = favicon
 
-	} else {
-		favicon, _ = gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-		favicon.SetPixelSize(64)
-	}
-	// saving image data of original favicon
-	station.FaviconImage, _ = gtk.ImageNewFromPixbuf(favicon.GetPixbuf())
-
-	// resizing the image for the listboxrow
-	Resize(favicon, Conf.ICON_SIZE)
 	hbox.Add(favicon)
 	nameLabel, _ := gtk.LabelNew(station.Name)
 	vbox.Add(nameLabel)
@@ -165,6 +130,10 @@ func DownloadFavicon(faviconUrl string) (*gtk.Image, error) {
 	}
 
 	img, err := png.Decode(buf)
+	if err != nil {
+		img, err = jpeg.Decode(buf)
+	}
+
 	if err != nil {
 		return nil, err
 	}
