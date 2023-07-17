@@ -16,7 +16,7 @@ func (app *Header) Create() *gtk.Box {
 	clockLabel, _ := gtk.LabelNew("")
 
 	go func() {
-		glib.TimeoutAdd(uint(1000), func() bool {
+		glib.TimeoutAdd(uint(30000), func() bool {
 			clockLabel.SetText(time.Now().Format("Mon 3:04 PM | Jun 2"))
 			return true
 		})

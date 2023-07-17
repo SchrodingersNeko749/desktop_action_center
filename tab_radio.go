@@ -33,13 +33,13 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	}
 	mpdclient, err := mpd.Dial("tcp", "localhost:6600")
 	if err != nil {
-		l, _ := gtk.LabelNew("Error encountered: " + err.Error())
-		b, _ := gtk.ButtonNewWithLabel("Retry connection")
-		b.Connect("clicked", func() {
+		errorLabel, _ := gtk.LabelNew("Error encountered: " + err.Error())
+		retryButton, _ := gtk.ButtonNewWithLabel("Retry connection")
+		retryButton.Connect("clicked", func() {
 			radio.Create()
 		})
-		radio.container.Add(l)
-		radio.container.Add(b)
+		radio.container.Add(errorLabel)
+		radio.container.Add(retryButton)
 		radio.container.ShowAll()
 		return radio.container, nil
 	}
@@ -144,6 +144,7 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	radio.container.ShowAll()
 	return radio.container, nil
 }
+
 func (radio *RadioTab) createMpdVolumeComponent() (*gtk.Box, error) {
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
@@ -175,4 +176,19 @@ func (radio *RadioTab) createMpdVolumeComponent() (*gtk.Box, error) {
 	return hbox, nil
 }
 
-/*	*/
+func (radio *RadioTab) CreateStationWidget() error {
+	stationRow, _ := gtk.ListBoxRowNew()
+	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	favicon, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+	favicon.SetPixelSize(64)
+	hbox.Add(favicon)
+	nameLabel, _ := gtk.LabelNew("Loading ... ")
+	vbox.Add(nameLabel)
+	hbox.Add(vbox)
+	stationRow.Add(hbox)
+
+	radio.listbox.Add(stationRow)
+	radio.listbox.ShowAll()
+	return nil
+}
