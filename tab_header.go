@@ -13,7 +13,7 @@ type Header struct {
 
 func (app *Header) Create() *gtk.Box {
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	clockLabel, _ := gtk.LabelNew("")
+	clockLabel, _ := gtk.LabelNew(time.Now().Format("Mon 3:04 PM | Jun 2"))
 
 	go func() {
 		glib.TimeoutAdd(uint(30000), func() bool {

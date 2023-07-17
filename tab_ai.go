@@ -38,6 +38,10 @@ func (ai *AiTab) Create() (*gtk.Box, error) {
 	container.Add(inputBox)
 
 	clearBtn.Connect("clicked", func() {
+		glib.IdleAdd(func() {
+			for listBox.GetChildren().Length() > 0 {
+				listBox.Remove(listBox.GetRowAtIndex(0))
+		}
 	})
 	listBox.Connect("row-selected", func() {
 		selected := listBox.GetSelectedRow()

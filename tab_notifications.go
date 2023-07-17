@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
+	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -83,9 +84,11 @@ func (app *NotificationTab) AddNotification(widget *gtk.ListBoxRow) {
 }
 
 func (app *NotificationTab) clearNotification() {
-	for app.ListBox.GetChildren().Length() > 0 {
-		app.ListBox.Remove(app.ListBox.GetRowAtIndex(0))
-	}
+	glib.IdleAdd(func() {
+		for app.ListBox.GetChildren().Length() > 0 {
+			app.ListBox.Remove(app.ListBox.GetRowAtIndex(0))
+		}
+	})
 }
 
 func (n *Notification) RemoveHyperLinkFromBody() {

@@ -62,9 +62,8 @@ func RunInference(p Prompt, body *gtk.Label) {
 		if isComplete {
 			break
 		}
-
-		fmt.Println("Waiting for more data")
 	}
+	fmt.Println("Finished inference")
 }
 
 func GeneratePrompt(mode string, input string, maxToken int, model string, inclIngest bool, inclStats bool) Prompt {
