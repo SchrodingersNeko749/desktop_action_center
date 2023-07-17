@@ -75,6 +75,40 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 	return stations
 
 }
+func (radio *RadioTab) CreateStationWidget() error {
+	stationRow, _ := gtk.ListBoxRowNew()
+	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	favicon, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
+	favicon.SetPixelSize(64)
+	hbox.Add(favicon)
+	nameLabel, _ := gtk.LabelNew("Loading ... ")
+	vbox.Add(nameLabel)
+	hbox.Add(vbox)
+	stationRow.Add(hbox)
+
+	radio.listbox.Add(stationRow)
+	radio.listbox.ShowAll()
+	return nil
+}
+
+//	func (radio *RadioTab) PopulateStationWidget(stationRow *gtk.ListBoxRow, station Station) error {
+//		hbox, err := stationRow.GetChild()
+//		if err != nil {
+//			return err
+//		}
+//		// vbox, err := hbox.(*gtk.Box).GetChildren()
+//		// if err != nil {
+//		// 	return err
+//		// }
+//		nameLabel, err := gtk.LabelNew("test")
+//		if err != nil {
+//			return err
+//		}
+//		nameLabel.SetText(station.Name)
+//		hbox.(*gtk.Box).Add(nameLabel)
+//		return nil
+//	}
 func (radio *RadioTab) AddFoundStation(station Station) error {
 	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)

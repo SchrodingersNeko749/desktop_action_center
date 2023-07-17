@@ -18,23 +18,41 @@ type RadioTab struct {
 }
 
 func (radio *RadioTab) Create() (*gtk.Box, error) {
-	mpdclient, _ := mpd.Dial("tcp", "localhost:6600")
+	var err error
+
+	if radio.container == nil {
+		radio.container, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+		if err != nil {
+			return nil, err
+		}
+	}
+	children := radio.container.GetChildren()
+	for l := children; l != nil; l = l.Next() {
+		child := l.Data().(*gtk.Widget)
+		radio.container.Remove(child)
+	}
+	mpdclient, err := mpd.Dial("tcp", "localhost:6600")
+	if err != nil {
+		l, _ := gtk.LabelNew("Error encountered: " + err.Error())
+		b, _ := gtk.ButtonNewWithLabel("Retry connection")
+		b.Connect("clicked", func() {
+			radio.Create()
+		})
+		radio.container.Add(l)
+		radio.container.Add(b)
+		radio.container.ShowAll()
+		return radio.container, nil
+	}
 	radio.mpdClient = *mpdclient
-	container, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	playerBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	label, _ := gtk.LabelNew("loading")
 	go func() {
 		glib.TimeoutAdd(uint(1000), func() bool {
+			if radio.mpdClient.Ping() != nil {
+				radio.Create()
+			}
 			song, _ := radio.mpdClient.CurrentSong()
 			if song != nil {
-				/*
-					song["XXX"] =
-						"file": "http://listen.uturnradio.com/dubstep_32"
-						"Title": "Mendum - Forsaken ft. Brenton Mattheus"
-						"Name": "Uturn Radio: Dubstep Music"
-						"Pos": "0"
-						"Id": "8"
-				*/
 				label.SetText(song["Title"])
 			}
 			return true
@@ -71,12 +89,14 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	}
 	// Advanced search
 	inputBox, _ := gtk.EntryNew()
+	inputBox.SetPlaceholderText("Search radio stations here")
 	inputBox.SetIconFromIconName(gtk.ENTRY_ICON_PRIMARY, "search")
 	listBox, _ := gtk.ListBoxNew()
 	advancedSearchBoxExpander, _ := gtk.ExpanderNew("Advanced Search")
 	advancedSearchBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
 	inputBoxHintLabel, _ := gtk.LabelNew("Search new stations")
 	advancedSearchBox.Add(inputBoxHintLabel)
+
 	listBox.Connect("row-selected", func() {
 		selected := listBox.GetSelectedRow()
 		if selected != nil {
@@ -119,11 +139,10 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	advancedSearchBoxExpander.Add(advancedSearchBox)
 
 	radio.listbox = listBox
-	radio.container = container
-	container.Add(playerBox)
-	container.PackStart(advancedSearchBoxExpander, false, true, 0)
-
-	return container, nil
+	radio.container.Add(playerBox)
+	radio.container.PackStart(advancedSearchBoxExpander, false, true, 0)
+	radio.container.ShowAll()
+	return radio.container, nil
 }
 func (radio *RadioTab) createMpdVolumeComponent() (*gtk.Box, error) {
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
@@ -134,7 +153,7 @@ func (radio *RadioTab) createMpdVolumeComponent() (*gtk.Box, error) {
 	style.AddProvider(StyleProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 	style.AddClass("scale-box")
 
-	volumeBar, err := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
+	volumeBar, _ := gtk.ScaleNewWithRange(gtk.ORIENTATION_HORIZONTAL, 0, 100, 1)
 	volumeBar.SetHExpand(true)
 	volumeBar.SetSizeRequest(500, 20)
 
@@ -153,7 +172,7 @@ func (radio *RadioTab) createMpdVolumeComponent() (*gtk.Box, error) {
 	hbox.PackStart(volumeBar, true, true, 0)
 	hbox.PackEnd(label, true, true, 0)
 
-	return hbox, err
+	return hbox, nil
 }
 
 /*	*/

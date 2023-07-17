@@ -161,7 +161,7 @@ func (app *ActionCenter) createComponent(widget *WidgetConfig) (*gtk.Box, error)
 }
 
 func (app *ActionCenter) createBrightnessComponent(configWidget *WidgetConfig) (*gtk.Box, error) {
-	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	hbox.SetHAlign(gtk.ALIGN_CENTER)
 	hbox.SetVAlign(gtk.ALIGN_CENTER)
 
