@@ -102,10 +102,9 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 			radio.mpdClient.Clear()
 			radio.currentStation = radio.foundStations[selected.GetIndex()]
 			if radio.currentStation.Favicon == "" {
-				stationImg.SetFromIconName("radio", 180)
+				stationImg.SetFromIconName("radio", 192)
 			} else {
-				newImage := radio.currentStation.FaviconImage
-				stationImg.SetFromPixbuf(newImage.GetPixbuf())
+				stationImg = ImgDownload(radio.currentStation.Favicon, 192)
 			}
 			playerBox.ShowAll()
 			label.SetText(radio.currentStation.Name)
