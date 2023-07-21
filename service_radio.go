@@ -4,15 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"math/rand"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -75,28 +72,11 @@ func (radio *RadioTab) AdvancedStationSearch(name string, countryCode string, li
 
 }
 
-//	func (radio *RadioTab) PopulateStationWidget(stationRow *gtk.ListBoxRow, station Station) error {
-//		hbox, err := stationRow.GetChild()
-//		if err != nil {
-//			return err
-//		}
-//		// vbox, err := hbox.(*gtk.Box).GetChildren()
-//		// if err != nil {
-//		// 	return err
-//		// }
-//		nameLabel, err := gtk.LabelNew("test")
-//		if err != nil {
-//			return err
-//		}
-//		nameLabel.SetText(station.Name)
-//		hbox.(*gtk.Box).Add(nameLabel)
-//		return nil
-//	}
 func (radio *RadioTab) AddFoundStation(station Station) error {
 	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	favicon := DownloadImage(station.Favicon)
+	favicon := ImgDownload(station.Favicon, Conf.ICON_SIZE*2)
 	station.FaviconImage = favicon
 
 	hbox.Add(favicon)
@@ -109,59 +89,4 @@ func (radio *RadioTab) AddFoundStation(station Station) error {
 	radio.foundStations = append(radio.foundStations, station)
 	radio.listbox.ShowAll()
 	return nil
-}
-func Play() {
-
-}
-
-func DownloadFavicon(faviconUrl string) (*gtk.Image, error) {
-	fmt.Println(faviconUrl)
-	response, err := http.Get(faviconUrl)
-	if err != nil || response.StatusCode != 200 {
-		fmt.Println("errors found")
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	img, err := png.Decode(buf)
-	if err != nil {
-		img, err = jpeg.Decode(buf)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	width := img.Bounds().Size().X
-	height := img.Bounds().Size().Y
-	stride := width * 4
-	pixels := make([]byte, height*stride)
-
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			r, g, b, a := img.At(x, y).RGBA()
-			p := (y*width + x) * 4
-			pixels[p] = byte(r)
-			pixels[p+1] = byte(g)
-			pixels[p+2] = byte(b)
-			pixels[p+3] = byte(a)
-		}
-	}
-
-	pixbuf, err := gdk.PixbufNewFromData(pixels, gdk.COLORSPACE_RGB, true, 8, width, height, stride)
-	if err != nil {
-		return nil, err
-	}
-
-	gtkimg, err := gtk.ImageNewFromPixbuf(pixbuf)
-	if err != nil {
-		return nil, err
-	}
-	return gtkimg, nil
 }

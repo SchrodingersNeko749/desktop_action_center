@@ -1,8 +1,6 @@
 package main
 
 import (
-	"image/png"
-	"os"
 	"time"
 
 	"github.com/gotk3/gotk3/cairo"
@@ -25,21 +23,14 @@ func (app *ScreenTab) Create(actionCenter *ActionCenter) (*gtk.Box, error) {
 	label, _ := gtk.LabelNew("Wifi")
 	fullscreenScreenshotButton, _ := gtk.ButtonNewWithLabel("Screenshot")
 	fullscreenScreenshotButton.Connect("clicked", func() {
-		app.ActionCenter.win.Hide()
 		go func() {
+			app.ActionCenter.ToggleVisiblity()
 			time.Sleep(time.Duration(100) * time.Millisecond)
-			bounds := screenshot.GetDisplayBounds(0)
-			img, err := screenshot.CaptureRect(bounds)
-			app.ActionCenter.win.Show()
-			if err != nil {
-				panic(err)
-			}
-			file, err := os.Create("test.png")
-			if err != nil {
-				panic(err)
-			}
-			defer file.Close()
-			png.Encode(file, img)
+			path := "/tmp/screenshot.png"
+			img := ImgGetScreenshot(path)
+			img = ImgResize(img, Conf.WINDOW_WIDTH-70, 0)
+			app.ActionCenter.ToggleVisiblity()
+			actionCenter.AddNotification(NewNotification("", 0, "", "", "", nil, nil, 0, img))
 		}()
 	})
 
@@ -78,17 +69,6 @@ func (app *ScreenTab) Create(actionCenter *ActionCenter) (*gtk.Box, error) {
 		da.SetSizeRequest(bounds.Size().X, bounds.Size().Y)
 		selectionWindow.Add(da)
 		selectionWindow.ShowAll()
-
-		// img, err := screenshot.CaptureRect(bounds)
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// file, err := os.Create("test.png")
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// defer file.Close()
-		// png.Encode(file, img)
 	})
 
 	container.Add(fullscreenScreenshotButton)

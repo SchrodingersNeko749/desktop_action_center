@@ -41,7 +41,7 @@ func (n *NotificationServer) Init(ac *ActionCenter) error {
 func (n *NotificationServer) Notify(appName string, replacesID uint32, appIcon string, summary string, body string, actions []string, hints map[string]dbus.Variant, expireTimeout int32) (uint32, *dbus.Error) {
 	unescaped := strip.StripTags(body)
 	unescaped = html.UnescapeString(unescaped)
-	notification := NewNotification(appName, replacesID, appIcon, summary, unescaped, actions, hints, expireTimeout)
+	notification := NewNotification(appName, replacesID, appIcon, summary, unescaped, actions, hints, expireTimeout, nil)
 
 	glib.IdleAdd(func() {
 		n.ActionCenter.AddNotification(notification)

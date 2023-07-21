@@ -10,7 +10,6 @@ import (
 type AiTab struct {
 	container *gtk.Box
 	listBox   *gtk.ListBox
-	Messages  []NotificationWidget
 }
 
 func (ai *AiTab) Create() (*gtk.Box, error) {
@@ -41,7 +40,8 @@ func (ai *AiTab) Create() (*gtk.Box, error) {
 		glib.IdleAdd(func() {
 			for listBox.GetChildren().Length() > 0 {
 				listBox.Remove(listBox.GetRowAtIndex(0))
-		}
+			}
+		})
 	})
 	listBox.Connect("row-selected", func() {
 		selected := listBox.GetSelectedRow()
@@ -76,8 +76,8 @@ func (ai *AiTab) Create() (*gtk.Box, error) {
 
 func (ai *AiTab) AddMessage(msg string) {
 	username, _ := user.Current()
-	widget, _ := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0))
-	responseWidget, body := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0))
+	widget, _ := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", username.Username, msg, nil, nil, 0, nil))
+	responseWidget, body := CreateNotificationComponent(NewNotification("Her.st LLaMa", 0, "", "AI", "", nil, nil, 0, nil))
 
 	glib.IdleAdd(func() {
 		ai.listBox.Add(widget)

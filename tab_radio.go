@@ -78,8 +78,7 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 	commandBox.Add(voteButton)
 
 	playerBox.Add(label)
-	stationImg, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-	stationImg.SetPixelSize(128)
+	stationImg := ImgFromTheme("radio", 128)
 	playerBox.Add(stationImg)
 	playerBox.Add(commandBox)
 	volumeBox, _ := radio.createMpdVolumeComponent()
@@ -107,7 +106,6 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 			} else {
 				newImage := radio.currentStation.FaviconImage
 				stationImg.SetFromPixbuf(newImage.GetPixbuf())
-				Resize(stationImg, 180)
 			}
 			playerBox.ShowAll()
 			label.SetText(radio.currentStation.Name)
@@ -180,8 +178,7 @@ func (radio *RadioTab) CreateStationWidget() error {
 	stationRow, _ := gtk.ListBoxRowNew()
 	hbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	vbox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
-	favicon, _ := gtk.ImageNewFromIconName("radio", gtk.ICON_SIZE_LARGE_TOOLBAR)
-	favicon.SetPixelSize(64)
+	favicon := ImgFromTheme("radio", Conf.ICON_SIZE)
 	hbox.Add(favicon)
 	nameLabel, _ := gtk.LabelNew("Loading ... ")
 	vbox.Add(nameLabel)
