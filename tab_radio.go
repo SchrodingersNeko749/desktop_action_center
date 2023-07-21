@@ -104,7 +104,8 @@ func (radio *RadioTab) Create() (*gtk.Box, error) {
 			if radio.currentStation.Favicon == "" {
 				stationImg.SetFromIconName("radio", 192)
 			} else {
-				stationImg = ImgDownload(radio.currentStation.Favicon, 192)
+				newImg := ImgDownload(radio.currentStation.Favicon, 192)
+				stationImg.SetFromPixbuf(newImg.GetPixbuf())
 			}
 			playerBox.ShowAll()
 			label.SetText(radio.currentStation.Name)
